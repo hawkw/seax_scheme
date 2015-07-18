@@ -4,9 +4,21 @@ rust: nightly
 script:
   - cargo build
   - cargo test
-after_success:
-  - .travis/release.sh
 env:
   global:
-  - secure: iEGoVGb3OeqSqP4UP7nbLtMEmGi9JgI0nxjrpRrSg22pCCa+lMIIiYp9gY2558pwAbcxaJpahmTt3lYqe2wdKfXlGWRB7Tz99FR8lX+vRXpgxDLg1Sz8BAnN7X9bu+AGL/INwYOe6tVncXcQgKn4uSTYa001CqhlwPzMmtGSw/w=
-  - secure: eKEXvvZrTIKGV7LouFW0EfjFPd09OgEI3Y6Z5QsWdEdv73zMvXzjz9xHu+9AmYirI8m/e0v2/RXefP/elcxjLKBa61b1MC/shQPjpbaqC4Y6UTQh5If1X/QN88cbc+VldD2dKgjP5gRX72TAfHoO466NLIxxigKkZJQsOawOVUs=
+    - secure: iEGoVGb3OeqSqP4UP7nbLtMEmGi9JgI0nxjrpRrSg22pCCa+lMIIiYp9gY2558pwAbcxaJpahmTt3lYqe2wdKfXlGWRB7Tz99FR8lX+vRXpgxDLg1Sz8BAnN7X9bu+AGL/INwYOe6tVncXcQgKn4uSTYa001CqhlwPzMmtGSw/w=
+    - secure: eKEXvvZrTIKGV7LouFW0EfjFPd09OgEI3Y6Z5QsWdEdv73zMvXzjz9xHu+9AmYirI8m/e0v2/RXefP/elcxjLKBa61b1MC/shQPjpbaqC4Y6UTQh5If1X/QN88cbc+VldD2dKgjP5gRX72TAfHoO466NLIxxigKkZJQsOawOVUs=
+before_deploy:
+  - cargo doc
+  - .travis/publish.sh
+  - cargo login $CRATES_TOKEN
+  - cargo package
+  - cargo publish
+deploy:
+  provider: releases
+  api_key:
+    secure: PMTzLk29n+dKEqxO7ZR9Jim5ygPyr6jYWjo+YalDx/t89GLn9vpkSR5oGLBws1sMSoiSiY5kd5wua3CwBkg4pc83+AnAWjHaM/rCfbSBQ2Tpsh8A81gWDdu5g8+bqwE12PYAIAX05z7r6BwpFwKm0gvGhlW6vd6QCHS1gE42aXIGJHD/7BJxloO46yPJY9RPtk/6LbtJCIp9tFN7izW5Kqqo/J6BE/DtxVS4ei9s+Gh93WHyz71bV7c09EzYXzYKZPWhF38bHp06pDqopc8KtJ+f73guPbkgCjaMZv91c5P+omJNrwk2iRRyOY8JRiPcH3VuJCReg8OViKdarA0ysQcc0YnoKJF/NU01NUrVn5qmNio/RJ+WHN1+QIZfeLfYnnirfMPyBneSjXb5D9VxGSdy9YdQI5xf0uKpikDjU0aDIxxSD9Vo5AsfckgYP1ev0SyGsrxVGucnaCdDbI+0f7z0IkHMi3NeOE8eY/hoaeuUfslt1WtkX4gFeziN5M5UOja1Zt1dVSUW/Cl29pi9iW5TKytIp7d2uiAgLyFPHuJp0mIy6UZgjNYdjDm8njvSo6vBMbxcY6cuzPDkICNl1n8c9qR2X7gk3Kx8VBT7813wPz71kha3bGi91tTOQuWOgz49qwNN4F0QFV0jyJNjpkvsjm/FmIs/BPXV9iCmh0U=
+  file: 'target/debug/libseax_scheme.rlib'
+  on:
+    repo: hawkw/seax_scheme
+    tags: true
