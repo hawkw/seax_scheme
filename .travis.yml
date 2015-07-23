@@ -32,14 +32,15 @@ env:
   - secure: VuWtvGpWBSFDLA69XASeCcA3/5aQ2tLFrvO46ur3kLoJyGIsfnB5qBTDfKagJk3EpbLtT0GN3pT8LtkaRQ1eVJGPpmsrG4tMMVyAvwgIUl6kdMLc6kNHQqLoNP1o6TZ2RYp1gCZNENH3iXAjmLHtHa6vCtPcqExO5/7vO9dW4Q6zStNQnG5JjU//YpEJuGQ1gY5wkI9yI02LEthYMdFtNQQSO/Is8iDWxBBWKpONxwYyb/K+teHklD4Jef7J8uWoXs/1Q12g16ft0tudnjuszHHiKRCwn4h8wKQ1CNXRMZNbb+UaKaaYTC6z0V+KoZEDC+E7avZVJolemuyeMyFYYCadT+Q9TFjRf5o7Q0wEzCJT5wwAeu8qc8piUnFYlRWGPZEknAZSgIinF1D+ejiVop4OUDCkQAdLtHHAu+aXl9GZrZt1ieg+nrxzgRV7c1PonVhtB3tyRNh8q10SaDb2hKxQywslaDWlOQBgVFLKSKKfVv1g9m2f/qvOyKdyk+XV/X9WfoNKwvkJX/g+rRDTjyZunPjAqoenoMhEqN9klDFmX7s4HoW+ZWsMZYhDFlJf0JvBhu+sukAegaqWCuy2JfVXLmNgTaGU1rjbwHyc/Dwekw+9x7XMJdFo3SvZnwZoH8UPeeDa/AZuYMSxIfwOBfCAm/+9ZuZxnKhLuN+qQpc=
 
 after_success:
-  # upload the documentation from the build with beta (automatically only actually
-  # runs on the master branch)
-  - travis-cargo --only stable doc-upload
   # measure code coverage and upload to coveralls.io
   - travis-cargo coveralls --no-sudo
 
 before_deploy:
+  # upload the documentation from the build
+  - travis-cargo doc-upload
+  # prepare the package for publishing to crates.io
   - cargo package
+  # publish to crates.io
   - cargo publish --token $CRATES_TOKEN
 
 deploy:
