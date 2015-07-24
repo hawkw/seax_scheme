@@ -223,39 +223,32 @@ impl ASTNode for SExprNode {
     fn compile<'a>(&'a self, state: &'a SymTable<'a>) -> CompileResult {
         // TODO: break this monster apart into sub-functions
         // because this is a wretched abomination of cyclomatic complexity
+        macro_rules! compile_case {
+            ($case:expr, $result:expr, $state:expr) => {
+                $case.compile($state) // compile the case
+                     .map(|mut code| { // if it was compiled successfully,
+                        code.push(InstCell(JOIN)); // add JOIN
+                        $result.push( ListCell(box List::from_iter(code)) );
+                        $result // return the result with the code added
+                    })
+            }
+        }
         match self.operator {
             box Name(ref node) => match node.name.as_ref() {
                 "if" => match self.operands.as_slice() {
-                    [ref condition,ref true_case,ref false_case] => {
+                    [ref condition,ref true_case,ref false_case] =>
                         // compile the condition
                         condition
                             .compile(state)
                             .map(|mut it| { it.push(InstCell(SEL)); it })
-                        .and_then(|mut result| {
-                            // compile the true case
-                            true_case
-                                .compile(state)
-                                .map(|mut it| {
-                                    it.push(InstCell(JOIN));
-                                    List::from_iter(it)
-                                })
-                                .map(|code| {
-                                    result.push(ListCell(box code)); result
-                                })
-                            })
-                        .and_then(|mut result| {
-                            // compile the false case
-                            false_case
-                                .compile(state)
-                                .map(|mut it| {
-                                    it.push(InstCell(JOIN));
-                                    List::from_iter(it)
-                                })
-                                .map(|code| {
-                                    result.push(ListCell(box code)); result
-                                })
-                            })
-                    },
+                            .and_then(|mut result|
+                                // compile the true case
+                                compile_case!(true_case, result, state)
+                                )
+                            .and_then(|mut result|
+                                // compile the false case
+                                compile_case!(false_case, result, state)
+                            ),
                     _ => Err("[error]: malformed if expression".to_string())
                 },
                 "lambda" => match self.operands.as_slice() {
