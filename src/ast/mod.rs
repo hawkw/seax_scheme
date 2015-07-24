@@ -266,16 +266,14 @@ impl ASTNode for SExprNode {
                             } // todo: make errors otherwise
                         }
 
-                        let mut result = Vec::new();
-                        let mut func = try!(body.compile(&sym));
-                        func.push(InstCell(RET));
-
-                        result.push_all(&vec![
-                            InstCell(LDF),
-                            ListCell(box List::from_iter(func))
-                        ]);
-
-                        Ok(result)
+                        body.compile(&sym) // compile the lambda body
+                            .map(|mut code| {
+                                code.push(InstCell(RET)); // add RET opcode
+                                vec![
+                                    InstCell(LDF), // add LDF to load lambda
+                                    ListCell(box List::from_iter(code))
+                                ]
+                            })
                     },
                     _ => Err("[error]: malformed lambda expression".to_string())
                 },
@@ -447,16 +445,16 @@ impl SExprNode {
     /// evaluation time.
     #[stable(feature = "compile",since = "0.1.0")]
     fn depth(&self)     -> usize {
-            self.operands.iter().fold(
-                match *self.operator {
-                    SExpr(ref node) => node.depth(),
-                    Name(_)         => if self.is_bind() {1} else {0},
-                    _               => 0
-                },
+        self.operands.iter().fold(
+            match *self.operator {
+                SExpr(ref node) => node.depth(),
+                Name(_)         => if self.is_bind() {1} else {0},
+                _               => 0
+            },
             |acc, op| acc + match op {
                 &SExpr(ref node)    => node.depth(),
                 _                   => 0
-            } )
+            })
     }
 }
 
@@ -512,6 +510,7 @@ pub struct NameNode { pub name: String }
 
 impl NameNode {
     /// Returns true if this is a keyword
+    #[inline]
     #[stable(feature = "ast", since = "0.0.3")]
     fn is_kw(&self) -> bool {
         match self.name.as_ref() {
@@ -528,6 +527,7 @@ impl NameNode {
         }
     }
     /// Returns true if this is an arithmetic operator
+    #[inline]
     #[stable(feature = "ast", since = "0.0.3")]
     fn is_arith(&self) -> bool {
       match self.name.as_ref() {
@@ -536,6 +536,7 @@ impl NameNode {
       }
    }
     /// Returns true if this is a comparison operator
+    #[inline]
     #[stable(feature = "ast", since = "0.0.3")]
     fn is_cmp(&self) -> bool {
       match self.name.as_ref() {
