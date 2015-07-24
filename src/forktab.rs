@@ -35,7 +35,9 @@ pub struct ForkTable<'a, K, V>
     level: usize
 }
 
-impl<'a, K, V> ForkTable<'a, K, V> where K: Eq + Hash {
+impl<'a, K, V> ForkTable<'a, K, V>
+    where K: Eq + Hash
+{
 
     /// Returns a reference to the value corresponding to the key.
     ///
@@ -86,10 +88,9 @@ impl<'a, K, V> ForkTable<'a, K, V> where K: Eq + Hash {
         } else {
             self.table
                 .get(key)
-                .or(match self.parent {
-                        Some(ref parent)    => parent.get(key),
-                        None                => None
-                    })
+                .or(self.parent
+                        .map_or(None, |ref parent| parent.get(key))
+                    )
         }
     }
 
@@ -132,9 +133,9 @@ impl<'a, K, V> ForkTable<'a, K, V> where K: Eq + Hash {
     /// let mut level_2: ForkTable<isize,&str> = level_1.fork();
     /// assert_eq!(level_2.get_mut(&1isize), None);
     /// ```
-   #[unstable(feature = "forktable")]
-   pub fn get_mut<Q: ?Sized>(&mut self, key: &Q) -> Option<&mut V>
-       where K: Borrow<Q>,
+    #[unstable(feature = "forktable")]
+    pub fn get_mut<Q: ?Sized>(&mut self, key: &Q) -> Option<&mut V>
+        where K: Borrow<Q>,
              Q: Hash + Eq
     {
         self.table.get_mut(key)
@@ -340,10 +341,9 @@ impl<'a, K, V> ForkTable<'a, K, V> where K: Eq + Hash {
     {
         self.table.contains_key(key) ||
             (!self.whiteouts.contains(key) &&
-                match self.parent {
-                    Some(ref p) => p.chain_contains_key(key),
-                    None        => false
-                })
+                self.parent
+                    .map_or(false, |ref p| p.chain_contains_key(key))
+                )
     }
 
     /// Forks this table, returning a new `ForkTable<K,V>`.
@@ -460,9 +460,20 @@ impl<'a> Scope<&'a str> for ForkTable<'a, &'a str, (usize,usize)> {
     /// Bind a name to a scope.
     ///
     /// Returns the indices for that name in the SVM environment.
+    ///
+    /// # Arguments
+    ///
+    ///  + `name`  - a string pointer to the name to bind
+    ///  + `lvl`   - the current level
+    ///
+    /// # Return Value
+    ///
+    /// A tuple containing the indexes for that name in the
+    /// SVM environment (as `usize`).
     #[stable(feature = "compile",since = "0.1.0")]
     fn bind(&mut self,name: &'a str, lvl: usize) -> (usize,usize) {
-        let idx = self.values().fold(0, |a,i| max(a,i.1)) + 1;
+        let idx = self.values()
+                      .fold(0, |a,i| max(a,i.1)) + 1;
         self.insert(name, (lvl,idx));
         (self.level, idx)
     }
@@ -470,12 +481,19 @@ impl<'a> Scope<&'a str> for ForkTable<'a, &'a str, (usize,usize)> {
     ///
     /// Returns the indices for that name in the SVM environment,
     /// or None if that name is unbound.
+    ///
+    /// # Arguments
+    ///
+    ///  + `name`  - a string pointer to the name to look up
+    ///
+    /// # Return Value
+    ///
+    ///  + `Some(usize,usize)` if the name is bound in the symbol table
+    ///  + `None` if the name is unbound
     #[stable(feature = "compile",since = "0.1.0")]
     fn lookup(&self, name: &&'a str)             -> Option<(usize,usize)> {
-        match self.get(name) {
-            Some(&(lvl,idx)) => Some((lvl.clone(), idx.clone())),
-            None             => None
-        }
+        self.get(name) // TODO: shouldn't usize be Copy?
+            .map(|&( lvl, idx )| (lvl.clone(), idx.clone()) )
     }
 
 }
