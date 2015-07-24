@@ -227,21 +227,34 @@ impl ASTNode for SExprNode {
             box Name(ref node) => match node.name.as_ref() {
                 "if" => match self.operands.as_slice() {
                     [ref condition,ref true_case,ref false_case] => {
-                        let mut result = Vec::new();
-
-                        result.push_all(&try!(condition.compile(state)));
-                        result.push(InstCell(SEL));
-
-                        let mut false_code = try!(false_case.compile(state));
-                        false_code.push(InstCell(JOIN));
-
-                        let mut true_code = try!(true_case.compile(state));
-                        true_code.push(InstCell(JOIN));
-
-                        result.push(ListCell(box List::from_iter(true_code)));
-                        result.push(ListCell(box List::from_iter(false_code)));
-
-                        Ok(result)
+                        // compile the condition
+                        condition
+                            .compile(state)
+                            .map(|mut it| { it.push(InstCell(SEL)); it })
+                        .and_then(|mut result| {
+                            // compile the true case
+                            true_case
+                                .compile(state)
+                                .map(|mut it| {
+                                    it.push(InstCell(JOIN));
+                                    List::from_iter(it)
+                                })
+                                .map(|code| {
+                                    result.push(ListCell(box code)); result
+                                })
+                            })
+                        .and_then(|mut result| {
+                            // compile the false case
+                            false_case
+                                .compile(state)
+                                .map(|mut it| {
+                                    it.push(InstCell(JOIN));
+                                    List::from_iter(it)
+                                })
+                                .map(|code| {
+                                    result.push(ListCell(box code)); result
+                                })
+                            })
                     },
                     _ => Err("[error]: malformed if expression".to_string())
                 },
