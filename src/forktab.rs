@@ -241,12 +241,12 @@ impl<'a, K, V> ForkTable<'a, K, V>
     /// # #![feature(forktable,scheme)]
     /// # use seax_scheme::ForkTable;
     /// let mut table: ForkTable<isize,&str> = ForkTable::new();
-    /// assert_eq!(table.get(&1isize), None);
-    /// assert_eq!(table.insert(1isize, "two"), None);
-    /// assert_eq!(table.get(&1isize), Some(&"two"));
+    /// assert_eq!(table.get(&1), None);
+    /// assert_eq!(table.insert(1, "one"), None);
+    /// assert_eq!(table.get(&1), Some(&"one"));
     ///
-    /// assert_eq!(table.insert(2isize, "Two"), Some("two"));
-    /// assert_eq!(table.get(&2isize), Some(&"Two"));
+    /// assert_eq!(table.insert(1, "One"), Some("one"));
+    /// assert_eq!(table.get(&1), Some(&"One"));
     /// ```
     #[stable(feature = "forktable", since = "0.0.3")]
     pub fn insert(&mut self, k: K, v: V) -> Option<V> {
