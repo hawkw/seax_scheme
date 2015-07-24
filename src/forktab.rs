@@ -25,7 +25,10 @@ use super::ast::Scope;
 /// compiler, which is available [here](https://github.com/hawkw/decaf/blob/master/src/main/scala/com/meteorcode/common/ForkTable.scala).
 #[derive(Debug)]
 #[unstable(feature = "forktable")]
-pub struct ForkTable<'a, K:'a + Eq + Hash, V: 'a>  {
+pub struct ForkTable<'a, K, V>
+    where K: 'a + Eq + Hash,
+          V: 'a
+{
     table: HashMap<K, V>,
     whiteouts: HashSet<K>,
     parent: Option<&'a ForkTable<'a, K,V>>,
@@ -185,15 +188,18 @@ impl<'a, K, V> ForkTable<'a, K, V> where K: Eq + Hash {
     /// ```
     ///
     #[unstable(feature = "forktable")]
-    pub fn remove(&mut self, key: &K) -> Option<V> where K: Clone {
-            if self.table.contains_key(key) {
-                self.table.remove(key)
-            } else if self.chain_contains_key(key) {
-                self.whiteouts.insert(key.clone()); // TODO: could just white out specific hashes?
-                None
-            } else {
-                None
-            }
+    pub fn remove(&mut self, key: &K) -> Option<V>
+        where K: Clone
+    {
+        if self.table.contains_key(&key) {
+            self.table.remove(&key)
+        } else if self.chain_contains_key(&key) {
+            // TODO: could just white out specific hashes?
+            self.whiteouts.insert(key.clone());
+            None
+        } else {
+            None
+        }
     }
 
     /// Inserts a key-value pair from the map.
@@ -283,9 +289,12 @@ impl<'a, K, V> ForkTable<'a, K, V> where K: Eq + Hash {
     /// assert_eq!(level_2.contains_key(&1isize), false);
     /// ```
     #[stable(feature = "forktable", since = "0.0.3")]
-    pub fn contains_key(&self, key: &K) -> bool  {
-        !self.whiteouts.contains(key)  &&
-        self.table.contains_key(key)
+    pub fn contains_key<Q: ?Sized>(&self, key: &Q) -> bool
+        where K: Borrow<Q>,
+              Q: Hash + Eq
+    {
+        !self.whiteouts.contains(key) &&
+         self.table.contains_key(key)
     }
 
     /// Returns true if the key is defined in this level of the table, or
@@ -325,13 +334,16 @@ impl<'a, K, V> ForkTable<'a, K, V> where K: Eq + Hash {
     /// assert_eq!(level_2.chain_contains_key(&1isize), true);
     /// ```
     #[stable(feature = "forktable", since = "0.0.3")]
-    pub fn chain_contains_key(&self, key: &K) -> bool {
+    pub fn chain_contains_key<Q:? Sized>(&self, key: &Q) -> bool
+        where K: Borrow<Q>,
+              Q: Hash + Eq
+    {
         self.table.contains_key(key) ||
-        (!self.whiteouts.contains(key) &&
-            match self.parent {
-                Some(ref p) => p.chain_contains_key(key),
-                None        => false
-            })
+            (!self.whiteouts.contains(key) &&
+                match self.parent {
+                    Some(ref p) => p.chain_contains_key(key),
+                    None        => false
+                })
     }
 
     /// Forks this table, returning a new `ForkTable<K,V>`.
