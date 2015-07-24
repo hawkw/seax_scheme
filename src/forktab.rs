@@ -1,7 +1,9 @@
 use std::collections::{HashMap, HashSet};
 use std::collections::hash_map::{Keys,Values};
 use std::hash::Hash;
+use std::borrow::Borrow;
 use std::cmp::max;
+use std::ops;
 
 use super::ast::Scope;
 
@@ -23,14 +25,14 @@ use super::ast::Scope;
 /// compiler, which is available [here](https://github.com/hawkw/decaf/blob/master/src/main/scala/com/meteorcode/common/ForkTable.scala).
 #[derive(Debug)]
 #[unstable(feature = "forktable")]
-pub struct ForkTable<'a, K:'a +  Eq + Hash,V: 'a>  {
+pub struct ForkTable<'a, K:'a + Eq + Hash, V: 'a>  {
     table: HashMap<K, V>,
     whiteouts: HashSet<K>,
     parent: Option<&'a ForkTable<'a, K,V>>,
     level: usize
 }
 
-impl<'a, K,V> ForkTable<'a, K, V> where K: Eq + Hash {
+impl<'a, K, V> ForkTable<'a, K, V> where K: Eq + Hash {
 
     /// Returns a reference to the value corresponding to the key.
     ///
@@ -72,7 +74,10 @@ impl<'a, K,V> ForkTable<'a, K, V> where K: Eq + Hash {
     /// assert_eq!(level_2.get(&1isize), Some(&"One"));
     /// ```
     #[stable(feature = "forktable", since = "0.0.3")]
-    pub fn get<'b>(&'b self, key: &K) -> Option<&'b V> {
+    pub fn get<Q: ?Sized>(&self, key: &Q) -> Option<&V>
+        where K: Borrow<Q>,
+              Q: Hash + Eq
+    {
         if self.whiteouts.contains(key) {
             None
         } else {
@@ -125,7 +130,10 @@ impl<'a, K,V> ForkTable<'a, K, V> where K: Eq + Hash {
     /// assert_eq!(level_2.get_mut(&1isize), None);
     /// ```
    #[unstable(feature = "forktable")]
-   pub fn get_mut<'b>(&'b mut self, key: &K) -> Option<&'b mut V> {
+   pub fn get_mut<Q: ?Sized>(&mut self, key: &Q) -> Option<&mut V>
+       where K: Borrow<Q>,
+             Q: Hash + Eq
+    {
         self.table.get_mut(key)
     }
 
@@ -376,6 +384,60 @@ impl<'a, K,V> ForkTable<'a, K, V> where K: Eq + Hash {
         self.table.keys()
     }
 }
+
+/// Allows `table[&key]` indexing syntax.
+///
+/// This is just a wrapper for `get(&key)`
+///
+/// ```
+/// # #![feature(forktable,scheme)]
+/// # use seax_scheme::ForkTable;
+/// let mut table: ForkTable<isize,&str> = ForkTable::new();
+/// table.insert(1, "One");
+/// assert_eq!(table[&1], "One");
+/// ```
+#[unstable(feature="forktable")]
+impl<'a, 'b, K, Q: ?Sized, V> ops::Index<&'b Q> for ForkTable<'a, K, V>
+    where K: Eq + Hash + Borrow<Q>,
+          Q: Eq + Hash {
+
+        #[unstable(feature="forktable")]
+        type Output = V;
+
+        #[inline]
+        #[unstable(feature="forktable")]
+        fn index(&self, index: &Q) -> &Self::Output {
+            self.get(index)
+                .expect("undefined index")
+        }
+
+    }
+
+/// Allows mutable `table[&key]` indexing syntax.
+///
+/// This is just a wrapper for `get_mut(&key)`
+///
+/// ```
+/// # #![feature(forktable,scheme)]
+/// # use seax_scheme::ForkTable;
+/// let mut table: ForkTable<isize,&str> = ForkTable::new();
+/// table.insert(1, "One");
+/// table[&1] = "one";
+/// assert_eq!(table[&1], "one")
+/// ```
+#[unstable(feature="forktable")]
+impl<'a, 'b, K, Q: ?Sized, V> ops::IndexMut<&'b Q> for ForkTable<'a, K, V>
+    where K: Eq + Hash + Borrow<Q>,
+          Q: Eq + Hash {
+
+        #[inline]
+        #[unstable(feature="forktable")]
+        fn index_mut(&mut self, index: &Q) -> &mut V {
+            self.get_mut(index)
+                .expect("undefined index")
+        }
+
+    }
 
 /// The symbol table for bound names is represented as a
 /// `ForkTable` mapping `&str` (names) to `(uint,uint)` tuples,
