@@ -24,7 +24,7 @@ use super::ast::Scope;
 /// reference implementation written by Hawk Weisman for the Decaf
 /// compiler, which is available [here](https://github.com/hawkw/decaf/blob/master/src/main/scala/com/meteorcode/common/ForkTable.scala).
 #[derive(Debug)]
-#[unstable(feature = "forktable")]
+#[stable(feature = "forktable", since = "0.2.6")]
 pub struct ForkTable<'a, K, V>
     where K: 'a + Eq + Hash,
           V: 'a
@@ -64,19 +64,19 @@ impl<'a, K, V> ForkTable<'a, K, V>
     /// # #![feature(forktable,scheme)]
     /// # use seax_scheme::ForkTable;
     /// let mut table: ForkTable<isize,&str> = ForkTable::new();
-    /// assert_eq!(table.get(&1isize), None);
+    /// assert_eq!(table.get(&1), None);
     /// table.insert(1isize, "One");
-    /// assert_eq!(table.get(&1isize), Some(&"One"));
-    /// assert_eq!(table.get(&2isize), None);
+    /// assert_eq!(table.get(&1), Some(&"One"));
+    /// assert_eq!(table.get(&2), None);
     /// ```
     /// ```
     /// # #![feature(forktable,scheme)]
     /// # use seax_scheme::ForkTable;
     /// let mut level_1: ForkTable<isize,&str> = ForkTable::new();
-    /// level_1.insert(1isize, "One");
+    /// level_1.insert(1, "One");
     ///
     /// let mut level_2: ForkTable<isize,&str> = level_1.fork();
-    /// assert_eq!(level_2.get(&1isize), Some(&"One"));
+    /// assert_eq!(level_2.get(&1), Some(&"One"));
     /// ```
     #[stable(feature = "forktable", since = "0.2.6")]
     pub fn get<Q: ?Sized>(&self, key: &Q) -> Option<&V>
@@ -96,9 +96,12 @@ impl<'a, K, V> ForkTable<'a, K, V>
 
     /// Returns a mutable reference to the value corresponding to the key.
     ///
-    /// If the key is defined in this level of the table, or in any
-    /// of its' parents, a reference to the associated value will be
-    /// returned.
+    /// If the key is defined in this level of the table, a reference to the
+    /// associated value will be returned.
+    ///
+    /// Note that only keys defined in this level of the table can be accessed
+    /// as mutable. This is because otherwise it would be necessary for each
+    /// level of the table to hold a mutable reference to its parent.
     ///
     /// The key may be any borrowed form of the map's key type, but
     /// `Hash` and `Eq` on the borrowed form *must* match those for
@@ -119,21 +122,21 @@ impl<'a, K, V> ForkTable<'a, K, V>
     /// # #![feature(forktable,scheme)]
     /// # use seax_scheme::ForkTable;
     /// let mut table: ForkTable<isize,&str> = ForkTable::new();
-    /// assert_eq!(table.get_mut(&1isize), None);
+    /// assert_eq!(table.get_mut(&1), None);
     /// table.insert(1isize, "One");
-    /// assert_eq!(table.get_mut(&1isize), Some(&mut "One"));
-    /// assert_eq!(table.get_mut(&2isize), None);
+    /// assert_eq!(table.get_mut(&1), Some(&mut "One"));
+    /// assert_eq!(table.get_mut(&2), None);
     /// ```
     /// ```
     /// # #![feature(forktable,scheme)]
     /// # use seax_scheme::ForkTable;
     /// let mut level_1: ForkTable<isize,&str> = ForkTable::new();
-    /// level_1.insert(1isize, "One");
+    /// level_1.insert(1, "One");
     ///
     /// let mut level_2: ForkTable<isize,&str> = level_1.fork();
-    /// assert_eq!(level_2.get_mut(&1isize), None);
+    /// assert_eq!(level_2.get_mut(&1), None);
     /// ```
-    #[unstable(feature = "forktable")]
+    #[stable(feature = "forktable", since  = "0.2.6")]
     pub fn get_mut<Q: ?Sized>(&mut self, key: &Q) -> Option<&mut V>
         where K: Borrow<Q>,
              Q: Hash + Eq
@@ -170,22 +173,22 @@ impl<'a, K, V> ForkTable<'a, K, V>
     /// # #![feature(forktable,scheme)]
     /// # use seax_scheme::ForkTable;
     /// let mut table: ForkTable<isize,&str> = ForkTable::new();
-    /// table.insert(1isize, "One");
+    /// table.insert(1, "One");
     ///
-    /// assert_eq!(table.remove(&1isize), Some("One"));
-    /// assert_eq!(table.contains_key(&1isize), false);
+    /// assert_eq!(table.remove(&1), Some("One"));
+    /// assert_eq!(table.contains_key(&1), false);
     /// ```
     /// ```
     /// # #![feature(forktable,scheme)]
     /// # use seax_scheme::ForkTable;
     /// let mut level_1: ForkTable<isize,&str> = ForkTable::new();
-    /// level_1.insert(1isize, "One");
-    /// assert_eq!(level_1.contains_key(&1isize), true);
+    /// level_1.insert(1, "One");
+    /// assert_eq!(level_1.contains_key(&1), true);
     ///
     /// let mut level_2: ForkTable<isize,&str> = level_1.fork();
-    /// assert_eq!(level_2.chain_contains_key(&1isize), true);
-    /// assert_eq!(level_2.remove(&1isize), None);
-    /// assert_eq!(level_2.chain_contains_key(&1isize), false);
+    /// assert_eq!(level_2.chain_contains_key(&1), true);
+    /// assert_eq!(level_2.remove(&1), None);
+    /// assert_eq!(level_2.chain_contains_key(&1), false);
     /// ```
     ///
     #[stable(feature = "forktable", since="0.2.6")]
@@ -230,9 +233,9 @@ impl<'a, K, V> ForkTable<'a, K, V>
     /// # #![feature(forktable,scheme)]
     /// # use seax_scheme::ForkTable;
     /// let mut table: ForkTable<isize,&str> = ForkTable::new();
-    /// assert_eq!(table.get(&1isize), None);
-    /// table.insert(1isize, "One");
-    /// assert_eq!(table.get(&1isize), Some(&"One"));
+    /// assert_eq!(table.get(&1), None);
+    /// table.insert(1, "One");
+    /// assert_eq!(table.get(&1), Some(&"One"));
     /// ```
     ///
     /// Overwriting the value associated with a key:
@@ -274,20 +277,20 @@ impl<'a, K, V> ForkTable<'a, K, V>
     /// # #![feature(forktable,scheme)]
     /// # use seax_scheme::ForkTable;
     /// let mut table: ForkTable<isize,&str> = ForkTable::new();
-    /// assert_eq!(table.contains_key(&1isize), false);
-    /// table.insert(1isize, "One");
-    /// assert_eq!(table.contains_key(&1isize), true);
+    /// assert_eq!(table.contains_key(&1), false);
+    /// table.insert(1, "One");
+    /// assert_eq!(table.contains_key(&1), true);
     /// ```
     /// ```
     /// # #![feature(forktable,scheme)]
     /// # use seax_scheme::ForkTable;
     /// let mut level_1: ForkTable<isize,&str> = ForkTable::new();
-    /// assert_eq!(level_1.contains_key(&1isize), false);
-    /// level_1.insert(1isize, "One");
-    /// assert_eq!(level_1.contains_key(&1isize), true);
+    /// assert_eq!(level_1.contains_key(&1), false);
+    /// level_1.insert(1, "One");
+    /// assert_eq!(level_1.contains_key(&1), true);
     ///
     /// let mut level_2: ForkTable<isize,&str> = level_1.fork();
-    /// assert_eq!(level_2.contains_key(&1isize), false);
+    /// assert_eq!(level_2.contains_key(&1), false);
     /// ```
     #[stable(feature = "forktable", since = "0.2.6")]
     pub fn contains_key<Q: ?Sized>(&self, key: &Q) -> bool
@@ -319,20 +322,20 @@ impl<'a, K, V> ForkTable<'a, K, V>
     /// # #![feature(forktable,scheme)]
     /// # use seax_scheme::ForkTable;
     /// let mut table: ForkTable<isize,&str> = ForkTable::new();
-    /// assert_eq!(table.chain_contains_key(&1isize), false);
-    /// table.insert(1isize, "One");
-    /// assert_eq!(table.chain_contains_key(&1isize), true);
+    /// assert_eq!(table.chain_contains_key(&1), false);
+    /// table.insert(1, "One");
+    /// assert_eq!(table.chain_contains_key(&1), true);
     /// ```
     /// ```
     /// # #![feature(forktable,scheme)]
     /// # use seax_scheme::ForkTable;
     /// let mut level_1: ForkTable<isize,&str> = ForkTable::new();
-    /// assert_eq!(level_1.chain_contains_key(&1isize), false);
-    /// level_1.insert(1isize, "One");
-    /// assert_eq!(level_1.chain_contains_key(&1isize), true);
+    /// assert_eq!(level_1.chain_contains_key(&1), false);
+    /// level_1.insert(1, "One");
+    /// assert_eq!(level_1.chain_contains_key(&1), true);
     ///
     /// let mut level_2: ForkTable<isize,&str> = level_1.fork();
-    /// assert_eq!(level_2.chain_contains_key(&1isize), true);
+    /// assert_eq!(level_2.chain_contains_key(&1), true);
     /// ```
     #[stable(feature = "forktable", since = "0.2.6")]
     pub fn chain_contains_key<Q:? Sized>(&self, key: &Q) -> bool
