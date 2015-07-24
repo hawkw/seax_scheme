@@ -78,7 +78,7 @@ impl<'a, K, V> ForkTable<'a, K, V>
     /// let mut level_2: ForkTable<isize,&str> = level_1.fork();
     /// assert_eq!(level_2.get(&1isize), Some(&"One"));
     /// ```
-    #[stable(feature = "forktable", since = "0.0.3")]
+    #[stable(feature = "forktable", since = "0.2.6")]
     pub fn get<Q: ?Sized>(&self, key: &Q) -> Option<&V>
         where K: Borrow<Q>,
               Q: Hash + Eq
@@ -188,7 +188,7 @@ impl<'a, K, V> ForkTable<'a, K, V>
     /// assert_eq!(level_2.chain_contains_key(&1isize), false);
     /// ```
     ///
-    #[unstable(feature = "forktable")]
+    #[stable(feature = "forktable", since="0.2.6")]
     pub fn remove(&mut self, key: &K) -> Option<V>
         where K: Clone
     {
@@ -237,7 +237,7 @@ impl<'a, K, V> ForkTable<'a, K, V>
     ///
     /// Overwriting the value associated with a key:
     ///
-    /// ```ignore
+    /// ```
     /// # #![feature(forktable,scheme)]
     /// # use seax_scheme::ForkTable;
     /// let mut table: ForkTable<isize,&str> = ForkTable::new();
@@ -278,7 +278,7 @@ impl<'a, K, V> ForkTable<'a, K, V>
     /// table.insert(1isize, "One");
     /// assert_eq!(table.contains_key(&1isize), true);
     /// ```
-    /// ```ignore
+    /// ```
     /// # #![feature(forktable,scheme)]
     /// # use seax_scheme::ForkTable;
     /// let mut level_1: ForkTable<isize,&str> = ForkTable::new();
@@ -289,7 +289,7 @@ impl<'a, K, V> ForkTable<'a, K, V>
     /// let mut level_2: ForkTable<isize,&str> = level_1.fork();
     /// assert_eq!(level_2.contains_key(&1isize), false);
     /// ```
-    #[stable(feature = "forktable", since = "0.0.3")]
+    #[stable(feature = "forktable", since = "0.2.6")]
     pub fn contains_key<Q: ?Sized>(&self, key: &Q) -> bool
         where K: Borrow<Q>,
               Q: Hash + Eq
@@ -323,7 +323,7 @@ impl<'a, K, V> ForkTable<'a, K, V>
     /// table.insert(1isize, "One");
     /// assert_eq!(table.chain_contains_key(&1isize), true);
     /// ```
-    /// ```ignore
+    /// ```
     /// # #![feature(forktable,scheme)]
     /// # use seax_scheme::ForkTable;
     /// let mut level_1: ForkTable<isize,&str> = ForkTable::new();
@@ -334,7 +334,7 @@ impl<'a, K, V> ForkTable<'a, K, V>
     /// let mut level_2: ForkTable<isize,&str> = level_1.fork();
     /// assert_eq!(level_2.chain_contains_key(&1isize), true);
     /// ```
-    #[stable(feature = "forktable", since = "0.0.3")]
+    #[stable(feature = "forktable", since = "0.2.6")]
     pub fn chain_contains_key<Q:? Sized>(&self, key: &Q) -> bool
         where K: Borrow<Q>,
               Q: Hash + Eq
@@ -490,7 +490,7 @@ impl<'a> Scope<&'a str> for ForkTable<'a, &'a str, (usize,usize)> {
     ///
     ///  + `Some(usize,usize)` if the name is bound in the symbol table
     ///  + `None` if the name is unbound
-    #[stable(feature = "compile",since = "0.1.0")]
+    #[stable(feature = "compile",since = "0.2.6")]
     fn lookup(&self, name: &&'a str)             -> Option<(usize,usize)> {
         self.get(name) // TODO: shouldn't usize be Copy?
             .map(|&( lvl, idx )| (lvl.clone(), idx.clone()) )
