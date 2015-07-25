@@ -5,7 +5,7 @@ use std::borrow::Borrow;
 use std::cmp::max;
 use std::ops;
 
-use super::ast::Scope;
+use super::ast::{Scope,Index};
 
 /// An associative map data structure for representing scopes.
 ///
@@ -459,7 +459,7 @@ impl<'a, 'b, K, Q: ?Sized, V> ops::IndexMut<&'b Q> for ForkTable<'a, K, V>
 /// representing the location in the `$e` stack storing the value
 /// bound to that name.
 #[stable(feature = "compile",since = "0.1.0")]
-impl<'a> Scope<&'a str> for ForkTable<'a, &'a str, (usize,usize)> {
+impl<'a> Scope<&'a str> for ForkTable<'a, &'a str, Index> {
     /// Bind a name to a scope.
     ///
     /// Returns the indices for that name in the SVM environment.
@@ -474,11 +474,11 @@ impl<'a> Scope<&'a str> for ForkTable<'a, &'a str, (usize,usize)> {
     /// A tuple containing the indexes for that name in the
     /// SVM environment (as `usize`).
     #[stable(feature = "compile",since = "0.1.0")]
-    fn bind(&mut self,name: &'a str, lvl: usize) -> (usize,usize) {
+    fn bind(&mut self,name: &'a str, lvl: u64) -> Index {
         let idx = self.values()
                       .fold(0, |a,i| max(a,i.1)) + 1;
         self.insert(name, (lvl,idx));
-        (self.level, idx)
+        (self.level as u64, idx)
     }
     /// Look up a name against a scope.
     ///
@@ -494,7 +494,7 @@ impl<'a> Scope<&'a str> for ForkTable<'a, &'a str, (usize,usize)> {
     ///  + `Some(usize,usize)` if the name is bound in the symbol table
     ///  + `None` if the name is unbound
     #[stable(feature = "compile",since = "0.2.2")]
-    fn lookup(&self, name: &&'a str)             -> Option<(usize,usize)> {
+    fn lookup(&self, name: &&'a str)            -> Option<Index> {
         self.get(name) // TODO: shouldn't usize be Copy?
             .map(|&( lvl, idx )| (lvl.clone(), idx.clone()) )
     }

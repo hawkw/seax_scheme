@@ -18,12 +18,13 @@ use std::hash::Hash;
 #[cfg(test)]
 mod tests;
 
+pub type Index = (u64, u64);
 /// The symbol table for bound names is represented as a
 /// `ForkTable` mapping `&str` (names) to `(uint,uint)` tuples,
 /// representing the location in the `$e` stack storing the value
 /// bound to that name.
 #[stable(feature = "forktable", since = "0.0.6")]
-pub type SymTable<'a> = ForkTable<'a, &'a str, (usize,usize)>;
+pub type SymTable<'a> = ForkTable<'a, &'a str, Index>;
 
 /// A `CompileResult` is either `Ok(SVMCell)` or `Err(&str)`
 #[stable(feature = "compile", since = "0.0.3")]
@@ -38,13 +39,13 @@ pub trait Scope<K> where K: Eq + Hash {
     ///
     /// Returnsthe indices for that name in the SVM environment.
     #[stable(feature = "compile",since = "0.1.0")]
-    fn bind(&mut self, name: K, lvl: usize) -> (usize,usize);
+    fn bind(&mut self, name: K, lvl: u64) -> Index;
     /// Look up a name against a scope.
     ///
     /// Returns the indices for that name in the SVM environment,
     /// or None if that name is unbound.
     #[stable(feature = "compile",since = "0.1.0")]
-    fn lookup(&self, name: &K)              -> Option<(usize,usize)>;
+    fn lookup(&self, name: &K)            -> Option<Index>;
 }
 
 /// Trait for AST nodes.
@@ -441,7 +442,7 @@ impl SExprNode {
     /// in the top level of the closure with the lowest level of the stack at
     /// evaluation time.
     #[stable(feature = "compile",since = "0.1.0")]
-    fn depth(&self)     -> usize {
+    fn depth(&self)     -> u64 {
         self.operands.iter().fold(
             match *self.operator {
                 SExpr(ref node) => node.depth(),
@@ -600,7 +601,7 @@ impl ASTNode for NameNode {
 #[stable(feature = "ast", since = "0.0.2")]
 pub struct IntNode {
     #[stable(feature = "ast", since = "0.0.2")]
-    pub value: isize
+    pub value: i64
 }
 
 impl ASTNode for NumNode {
@@ -644,7 +645,7 @@ impl ASTNode for NumNode {
 #[stable(feature = "ast", since = "0.0.2")]
 pub struct UIntNode {
     #[stable(feature = "ast", since = "0.0.2")]
-    pub value: usize
+    pub value: u64
 }
 
 /// AST node for a floating-point constant
