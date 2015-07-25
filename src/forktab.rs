@@ -24,7 +24,7 @@ use super::ast::Scope;
 /// reference implementation written by Hawk Weisman for the Decaf
 /// compiler, which is available [here](https://github.com/hawkw/decaf/blob/master/src/main/scala/com/meteorcode/common/ForkTable.scala).
 #[derive(Debug)]
-#[stable(feature = "forktable", since = "0.2.6")]
+#[stable(feature = "forktable", since = "0.2.2")]
 pub struct ForkTable<'a, K, V>
     where K: 'a + Eq + Hash,
           V: 'a
@@ -78,7 +78,7 @@ impl<'a, K, V> ForkTable<'a, K, V>
     /// let mut level_2: ForkTable<isize,&str> = level_1.fork();
     /// assert_eq!(level_2.get(&1), Some(&"One"));
     /// ```
-    #[stable(feature = "forktable", since = "0.2.6")]
+    #[stable(feature = "forktable", since = "0.2.2")]
     pub fn get<Q: ?Sized>(&self, key: &Q) -> Option<&V>
         where K: Borrow<Q>,
               Q: Hash + Eq
@@ -136,7 +136,7 @@ impl<'a, K, V> ForkTable<'a, K, V>
     /// let mut level_2: ForkTable<isize,&str> = level_1.fork();
     /// assert_eq!(level_2.get_mut(&1), None);
     /// ```
-    #[stable(feature = "forktable", since  = "0.2.6")]
+    #[stable(feature = "forktable", since  = "0.2.2")]
     pub fn get_mut<Q: ?Sized>(&mut self, key: &Q) -> Option<&mut V>
         where K: Borrow<Q>,
              Q: Hash + Eq
@@ -292,7 +292,7 @@ impl<'a, K, V> ForkTable<'a, K, V>
     /// let mut level_2: ForkTable<isize,&str> = level_1.fork();
     /// assert_eq!(level_2.contains_key(&1), false);
     /// ```
-    #[stable(feature = "forktable", since = "0.2.6")]
+    #[stable(feature = "forktable", since = "0.2.2")]
     pub fn contains_key<Q: ?Sized>(&self, key: &Q) -> bool
         where K: Borrow<Q>,
               Q: Hash + Eq
@@ -337,7 +337,7 @@ impl<'a, K, V> ForkTable<'a, K, V>
     /// let mut level_2: ForkTable<isize,&str> = level_1.fork();
     /// assert_eq!(level_2.chain_contains_key(&1), true);
     /// ```
-    #[stable(feature = "forktable", since = "0.2.6")]
+    #[stable(feature = "forktable", since = "0.2.2")]
     pub fn chain_contains_key<Q:? Sized>(&self, key: &Q) -> bool
         where K: Borrow<Q>,
               Q: Hash + Eq
@@ -493,7 +493,7 @@ impl<'a> Scope<&'a str> for ForkTable<'a, &'a str, (usize,usize)> {
     ///
     ///  + `Some(usize,usize)` if the name is bound in the symbol table
     ///  + `None` if the name is unbound
-    #[stable(feature = "compile",since = "0.2.6")]
+    #[stable(feature = "compile",since = "0.2.2")]
     fn lookup(&self, name: &&'a str)             -> Option<(usize,usize)> {
         self.get(name) // TODO: shouldn't usize be Copy?
             .map(|&( lvl, idx )| (lvl.clone(), idx.clone()) )
