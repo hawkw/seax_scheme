@@ -333,19 +333,6 @@ impl ASTNode for SExprNode {
                                     ]);
                                     result
                                 })
-                            let mut body_code = Vec::new();
-                            body_code.push_all(&try!(body_exp.compile(&sym)));
-                            body_code.push(InstCell(RET));
-
-                            result.push_all(&[
-                                InstCell(LDF),
-                                ListCell(box List::from_iter(body_code)),
-                                InstCell(AP)
-                            ]);
-
-                            Ok(result)
-
-                        })
                     },
                     _ => Err(format!("[error]: malformed let expression:\n{:?}",self))
                 },
