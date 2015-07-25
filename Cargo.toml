@@ -13,4 +13,4 @@ keywords = ["vm","lisp","languages"]
 [dependencies]
 parser-combinators = "~0.2.6"
 log = "0.3.1"
-seax_svm = "^0.2.2"
+seax_svm = "^0.2.6"

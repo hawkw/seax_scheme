@@ -18,12 +18,13 @@ use std::hash::Hash;
 #[cfg(test)]
 mod tests;
 
+pub type Index = (u64, u64);
 /// The symbol table for bound names is represented as a
 /// `ForkTable` mapping `&str` (names) to `(uint,uint)` tuples,
 /// representing the location in the `$e` stack storing the value
 /// bound to that name.
 #[stable(feature = "forktable", since = "0.0.6")]
-pub type SymTable<'a> = ForkTable<'a, &'a str, (usize,usize)>;
+pub type SymTable<'a> = ForkTable<'a, &'a str, Index>;
 
 /// A `CompileResult` is either `Ok(SVMCell)` or `Err(&str)`
 #[stable(feature = "compile", since = "0.0.3")]
@@ -38,13 +39,13 @@ pub trait Scope<K> where K: Eq + Hash {
     ///
     /// Returnsthe indices for that name in the SVM environment.
     #[stable(feature = "compile",since = "0.1.0")]
-    fn bind(&mut self, name: K, lvl: usize) -> (usize,usize);
+    fn bind(&mut self, name: K, lvl: u64) -> Index;
     /// Look up a name against a scope.
     ///
     /// Returns the indices for that name in the SVM environment,
     /// or None if that name is unbound.
     #[stable(feature = "compile",since = "0.1.0")]
-    fn lookup(&self, name: &K)              -> Option<(usize,usize)>;
+    fn lookup(&self, name: &K)            -> Option<Index>;
 }
 
 /// Trait for AST nodes.
@@ -223,26 +224,32 @@ impl ASTNode for SExprNode {
     fn compile<'a>(&'a self, state: &'a SymTable<'a>) -> CompileResult {
         // TODO: break this monster apart into sub-functions
         // because this is a wretched abomination of cyclomatic complexity
+        macro_rules! compile_case {
+            ($case:expr, $result:expr, $state:expr) => {
+                $case.compile($state) // compile the case
+                     .map(|mut code| { // if it was compiled successfully,
+                        code.push(InstCell(JOIN)); // add JOIN
+                        $result.push( ListCell(box List::from_iter(code)) );
+                        $result // return the result with the code added
+                    })
+            }
+        }
         match self.operator {
             box Name(ref node) => match node.name.as_ref() {
                 "if" => match self.operands.as_slice() {
-                    [ref condition,ref true_case,ref false_case] => {
-                        let mut result = Vec::new();
-
-                        result.push_all(&try!(condition.compile(state)));
-                        result.push(InstCell(SEL));
-
-                        let mut false_code = try!(false_case.compile(state));
-                        false_code.push(InstCell(JOIN));
-
-                        let mut true_code = try!(true_case.compile(state));
-                        true_code.push(InstCell(JOIN));
-
-                        result.push(ListCell(box List::from_iter(true_code)));
-                        result.push(ListCell(box List::from_iter(false_code)));
-
-                        Ok(result)
-                    },
+                    [ref condition,ref true_case,ref false_case] =>
+                        // compile the condition
+                        condition
+                            .compile(state)
+                            .map(|mut it| { it.push(InstCell(SEL)); it })
+                            .and_then(|mut result|
+                                // compile the true case
+                                compile_case!(true_case, result, state)
+                                )
+                            .and_then(|mut result|
+                                // compile the false case
+                                compile_case!(false_case, result, state)
+                            ),
                     _ => Err("[error]: malformed if expression".to_string())
                 },
                 "lambda" => match self.operands.as_slice() {
@@ -260,16 +267,14 @@ impl ASTNode for SExprNode {
                             } // todo: make errors otherwise
                         }
 
-                        let mut result = Vec::new();
-                        let mut func = try!(body.compile(&sym));
-                        func.push(InstCell(RET));
-
-                        result.push_all(&vec![
-                            InstCell(LDF),
-                            ListCell(box List::from_iter(func))
-                        ]);
-
-                        Ok(result)
+                        body.compile(&sym) // compile the lambda body
+                            .map(|mut code| {
+                                code.push(InstCell(RET)); // add RET opcode
+                                vec![
+                                    InstCell(LDF), // add LDF to load lambda
+                                    ListCell(box List::from_iter(code))
+                                ]
+                            })
                     },
                     _ => Err("[error]: malformed lambda expression".to_string())
                 },
@@ -318,19 +323,17 @@ impl ASTNode for SExprNode {
                                 }
                             }
                             Ok(result)
-                        }).and_then(|mut result: Vec<SVMCell>| {
-                            let mut body_code = Vec::new();
-                            body_code.push_all(&try!(body_exp.compile(&sym)));
-                            body_code.push(InstCell(RET));
-
-                            result.push_all(&[
-                                InstCell(LDF),
-                                ListCell(box List::from_iter(body_code)),
-                                InstCell(AP)
-                            ]);
-
-                            Ok(result)
-
+                        }).and_then(|mut result: Vec<SVMCell> | {
+                            body_exp.compile(&sym)
+                                .map(|mut x| { x.push(InstCell(RET)); x })
+                                .map(|code | {
+                                    result.push_all(&[
+                                        InstCell(LDF),
+                                        ListCell(box List::from_iter(code)),
+                                        InstCell(AP)
+                                    ]);
+                                    result
+                                })
                         })
                     },
                     _ => Err(format!("[error]: malformed let expression:\n{:?}",self))
@@ -439,17 +442,17 @@ impl SExprNode {
     /// in the top level of the closure with the lowest level of the stack at
     /// evaluation time.
     #[stable(feature = "compile",since = "0.1.0")]
-    fn depth(&self)     -> usize {
-            self.operands.iter().fold(
-                match *self.operator {
-                    SExpr(ref node) => node.depth(),
-                    Name(_)         => if self.is_bind() {1} else {0},
-                    _               => 0
-                },
+    fn depth(&self)     -> u64 {
+        self.operands.iter().fold(
+            match *self.operator {
+                SExpr(ref node) => node.depth(),
+                Name(_)         => if self.is_bind() {1} else {0},
+                _               => 0
+            },
             |acc, op| acc + match op {
                 &SExpr(ref node)    => node.depth(),
                 _                   => 0
-            } )
+            })
     }
 }
 
@@ -505,6 +508,7 @@ pub struct NameNode { pub name: String }
 
 impl NameNode {
     /// Returns true if this is a keyword
+    #[inline]
     #[stable(feature = "ast", since = "0.0.3")]
     fn is_kw(&self) -> bool {
         match self.name.as_ref() {
@@ -521,6 +525,7 @@ impl NameNode {
         }
     }
     /// Returns true if this is an arithmetic operator
+    #[inline]
     #[stable(feature = "ast", since = "0.0.3")]
     fn is_arith(&self) -> bool {
       match self.name.as_ref() {
@@ -529,6 +534,7 @@ impl NameNode {
       }
    }
     /// Returns true if this is a comparison operator
+    #[inline]
     #[stable(feature = "ast", since = "0.0.3")]
     fn is_cmp(&self) -> bool {
       match self.name.as_ref() {
@@ -595,7 +601,7 @@ impl ASTNode for NameNode {
 #[stable(feature = "ast", since = "0.0.2")]
 pub struct IntNode {
     #[stable(feature = "ast", since = "0.0.2")]
-    pub value: isize
+    pub value: i64
 }
 
 impl ASTNode for NumNode {
@@ -639,7 +645,7 @@ impl ASTNode for NumNode {
 #[stable(feature = "ast", since = "0.0.2")]
 pub struct UIntNode {
     #[stable(feature = "ast", since = "0.0.2")]
-    pub value: usize
+    pub value: u64
 }
 
 /// AST node for a floating-point constant

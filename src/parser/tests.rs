@@ -66,15 +66,15 @@ fn test_square_bracket_sexpr() {
 fn test_lex_sint_pos() {
     assert_eq!(
         parser(number).parse("1234"),
-        Ok((IntConst(IntNode { value: 1234isize }), ""))
+        Ok((IntConst(IntNode { value: 1234 }), ""))
         );
     assert_eq!(
         parser(number).parse("#d1234"),
-        Ok((IntConst(IntNode { value: 1234isize }), ""))
+        Ok((IntConst(IntNode { value: 1234 }), ""))
         );
     assert_eq!(
         parser(number).parse("#D1234"),
-        Ok((IntConst(IntNode { value: 1234isize }), ""))
+        Ok((IntConst(IntNode { value: 1234 }), ""))
         );
 }
 
@@ -82,7 +82,7 @@ fn test_lex_sint_pos() {
 fn test_lex_sint_neg() {
     assert_eq!(
         parser(number).parse("-1234"),
-        Ok((IntConst(IntNode { value: -1234isize }), ""))
+        Ok((IntConst(IntNode { value: -1234 }), ""))
         );
 }
 
@@ -90,11 +90,11 @@ fn test_lex_sint_neg() {
 fn test_lex_sint_hex() {
     assert_eq!(
         parser(number).parse("#x0ff"),
-        Ok((IntConst(IntNode { value: 0x0ffisize }), ""))
+        Ok((IntConst(IntNode { value: 0x0ff }), ""))
         );
     assert_eq!(
         parser(number).parse("#X0FF"),
-        Ok((IntConst(IntNode { value: 0x0ffisize }), ""))
+        Ok((IntConst(IntNode { value: 0x0ff }), ""))
         );
 }
 /* // Currently unsupported
@@ -114,11 +114,11 @@ fn test_parse_sint_bin_upper() {
 fn test_lex_uint() {
     assert_eq!(
         parser(number).parse("1234u"),
-        Ok((UIntConst(UIntNode { value: 1234usize }), ""))
+        Ok((UIntConst(UIntNode { value: 1234 }), ""))
         );
     assert_eq!(
         parser(number).parse("4321U"),
-        Ok((UIntConst(UIntNode { value: 4321usize }), ""))
+        Ok((UIntConst(UIntNode { value: 4321 }), ""))
         );
 }
 
@@ -126,11 +126,11 @@ fn test_lex_uint() {
 fn test_lex_uint_hex() {
     assert_eq!(
         parser(number).parse("#x0ffu"),
-        Ok((UIntConst(UIntNode { value: 0x0ffusize }), ""))
+        Ok((UIntConst(UIntNode { value: 0x0ff }), ""))
         );
     assert_eq!(
         parser(number).parse("#X0FFu"),
-        Ok((UIntConst(UIntNode { value: 0x0ffusize }), ""))
+        Ok((UIntConst(UIntNode { value: 0x0ff }), ""))
         );
 }
 

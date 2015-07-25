@@ -13,8 +13,8 @@ fn test_compile_add() {
     let ast = SExprNode {
         operator: box Name(NameNode { name: "+".to_string() }),
         operands: vec![
-            NumConst(IntConst(IntNode{ value: 1isize })),
-            NumConst(IntConst(IntNode{ value: 2isize }))
+            NumConst(IntConst(IntNode{ value: 1 })),
+            NumConst(IntConst(IntNode{ value: 2 }))
         ]
     };
     assert_eq!(
@@ -32,9 +32,9 @@ fn test_compile_sub() {
     let ast = SExprNode {
         operator: box Name(NameNode { name: "-".to_string() }),
         operands: vec![
-            NumConst(UIntConst(UIntNode{ value: 9usize })),
-            NumConst(UIntConst(UIntNode{ value: 9usize })),
-            NumConst(UIntConst(UIntNode{ value: 9usize }))
+            NumConst(UIntConst(UIntNode{ value: 9 })),
+            NumConst(UIntConst(UIntNode{ value: 9 })),
+            NumConst(UIntConst(UIntNode{ value: 9 }))
         ]
     };
     assert_eq!(
@@ -54,21 +54,21 @@ fn test_compile_div() {
     let ast = SExprNode {
         operator: box Name(NameNode { name: "/".to_string() }),
         operands: vec![
-            NumConst(IntConst(IntNode{ value: 1isize })),
-            NumConst(IntConst(IntNode{ value: 2isize })),
-            NumConst(IntConst(IntNode{ value: 3isize })),
-            NumConst(IntConst(IntNode{ value: 4isize }))
+            NumConst(IntConst(IntNode{ value: 1 })),
+            NumConst(IntConst(IntNode{ value: 2 })),
+            NumConst(IntConst(IntNode{ value: 3 })),
+            NumConst(IntConst(IntNode{ value: 4 }))
         ]
     };
     assert_eq!(
         ast.compile(&SymTable::new()),
         Ok(vec![
-            InstCell(LDC), AtomCell(SInt(4isize)),
-            InstCell(LDC), AtomCell(SInt(3isize)),
+            InstCell(LDC), AtomCell(SInt(4)),
+            InstCell(LDC), AtomCell(SInt(3)),
             InstCell(DIV),
-            InstCell(LDC), AtomCell(SInt(2isize)),
+            InstCell(LDC), AtomCell(SInt(2)),
             InstCell(DIV),
-            InstCell(LDC), AtomCell(SInt(1isize)),
+            InstCell(LDC), AtomCell(SInt(1)),
             InstCell(DIV)
 
         ])
@@ -105,13 +105,13 @@ fn test_compile_nested_sexpr() {
     let ast = SExprNode {
         operator: box Name(NameNode { name: "+".to_string() }),
         operands: vec![
-            NumConst(IntConst(IntNode{ value: 4isize })),
+            NumConst(IntConst(IntNode{ value: 4 })),
             SExpr(SExprNode {
                 operator: box Name(NameNode { name: "-".to_string() }),
                 operands: vec![
-                    NumConst(IntConst(IntNode{ value: 1isize })),
-                    NumConst(IntConst(IntNode{ value: 2isize })),
-                    NumConst(IntConst(IntNode{ value: 3isize }))
+                    NumConst(IntConst(IntNode{ value: 1 })),
+                    NumConst(IntConst(IntNode{ value: 2 })),
+                    NumConst(IntConst(IntNode{ value: 3 }))
                 ]
             })
         ]
@@ -136,13 +136,13 @@ fn test_compile_gte() {
         operator: box Name(NameNode { name: ">=".to_string() }),
         operands: vec![
             NumConst(FloatConst(FloatNode{ value: 1f64 })),
-            NumConst(IntConst(IntNode{ value: 2isize })),
+            NumConst(IntConst(IntNode{ value: 2 })),
         ]
     };
     assert_eq!(
         ast.compile(&SymTable::new()),
         Ok(vec![
-            InstCell(LDC), AtomCell(SInt(2isize)),
+            InstCell(LDC), AtomCell(SInt(2)),
             InstCell(LDC), AtomCell(Float(1f64)),
             InstCell(GTE)
         ])
@@ -154,15 +154,15 @@ fn test_compile_lte() {
     let ast = SExprNode {
         operator: box Name(NameNode { name: "<=".to_string() }),
         operands: vec![
-            NumConst(UIntConst(UIntNode{ value: 3usize })),
-            NumConst(IntConst(IntNode{ value: 2isize })),
+            NumConst(UIntConst(UIntNode{ value: 3 })),
+            NumConst(IntConst(IntNode{ value: 2 })),
         ]
     };
     assert_eq!(
         ast.compile(&SymTable::new()),
         Ok(vec![
-            InstCell(LDC), AtomCell(SInt(2isize)),
-            InstCell(LDC), AtomCell(UInt(3usize)),
+            InstCell(LDC), AtomCell(SInt(2)),
+            InstCell(LDC), AtomCell(UInt(3)),
             InstCell(LTE)
         ])
     )
@@ -185,4 +185,3 @@ fn test_compile_string() {
             ))])
         )
 }
-
