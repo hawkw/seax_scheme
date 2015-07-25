@@ -318,8 +318,7 @@ impl ASTNode for SExprNode {
                                 }
                             }
                             Ok(result)
-                        }).and_then(|mut result: Vec<SVMCell> | {
-
+                        }).and_then(|mut result: Vec<SVMCell>| {
                             let mut body_code = Vec::new();
                             body_code.push_all(&try!(body_exp.compile(&sym)));
                             body_code.push(InstCell(RET));
