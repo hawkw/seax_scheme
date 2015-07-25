@@ -333,7 +333,8 @@ impl ASTNode for SExprNode {
                                     ]);
                                     result
                                 })
-                    }),
+                        })
+                    },
                     _ => Err(format!("[error]: malformed let expression:\n{:?}",self))
                 },
                 _ => { // TODO: this is basically a duplicate of the general case
