@@ -1,5 +1,5 @@
 Seax Scheme
------------
+===========
 
 [![Build Status](https://img.shields.io/travis/hawkw/seax_scheme/master.svg?style=flat-square)](https://travis-ci.org/hawkw/seax_scheme)
 [![Coverage](https://img.shields.io/codecov/c/github/hawkw/seax_scheme/master.svg?style=flat-square)](http://codecov.io/github/hawkw/seax_scheme?branch=master)
@@ -14,3 +14,8 @@ This implementation aims to conform with the [Revised<sup>6</sup> Report on Sche
 Note that since this repository is a library and does not contain the Seax VM, the code in this repository is not sufficient to compile Scheme programs for Seax on its own. The [hawkw/seax](https://github.com/hawkw/seax) repository contains the Seax compiler/interpreter command-line application and REPL, which you will probably want if you intend to develop programs targeting Seax.
 
 Please report all issues and feature requests to the main repository ([hawkw/seax](https://github.com/hawkw/seax)).
+
+Contributing
+------------
+
+Seax is an open-source project and contributions are happily welcomed. For more information on how to contribute to Seax, please see the [CONTRIBUTING](https://github.com/hawkw/seax/blob/master/CONTRIBUTING.md) document on the main Seax repository.
