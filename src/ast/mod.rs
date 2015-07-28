@@ -7,7 +7,10 @@ use svm::slist::List::{Cons,Nil};
 
 use self::ExprNode::*;
 use self::NumNode::*;
-use super::ForkTable;
+
+use tools::ast::ASTNode;
+use tools::forktable::ForkTable;
+use tools::{SymTable, CompileResult, Index, Scope};
 
 use std::fmt;
 use std::fmt::Write;
@@ -18,60 +21,7 @@ use std::hash::Hash;
 #[cfg(test)]
 mod tests;
 
-pub type Index = (u64, u64);
-/// The symbol table for bound names is represented as a
-/// `ForkTable` mapping `&str` (names) to `(uint,uint)` tuples,
-/// representing the location in the `$e` stack storing the value
-/// bound to that name.
-#[stable(feature = "forktable", since = "0.0.6")]
-pub type SymTable<'a> = ForkTable<'a, &'a str, Index>;
-
-/// A `CompileResult` is either `Ok(SVMCell)` or `Err(&str)`
-#[stable(feature = "compile", since = "0.0.3")]
-pub type CompileResult = Result<Vec<SVMCell>, String>;
-
 static INDENT: &'static str = "    ";
-
-/// Trait for a symbol table
-#[stable(feature = "compile",since = "0.1.0")]
-pub trait Scope<K> where K: Eq + Hash {
-    /// Bind a name to a scope.
-    ///
-    /// Returnsthe indices for that name in the SVM environment.
-    #[stable(feature = "compile",since = "0.1.0")]
-    fn bind(&mut self, name: K, lvl: u64) -> Index;
-    /// Look up a name against a scope.
-    ///
-    /// Returns the indices for that name in the SVM environment,
-    /// or None if that name is unbound.
-    #[stable(feature = "compile",since = "0.1.0")]
-    fn lookup(&self, name: &K)            -> Option<Index>;
-}
-
-/// Trait for AST nodes.
-#[stable(feature = "ast", since = "0.0.2")]
-pub trait ASTNode {
-    /// Compile this node to a list of SVM expressions
-    #[unstable(feature="compile")]
-    fn compile<'a>(&'a self,
-                   state: &'a SymTable<'a>
-                   )                    -> CompileResult;
-
-    /// Pretty-print this node
-    #[stable(feature = "ast", since = "0.0.2")]
-    fn prettyprint(&self)               -> String { self.print_level(0) }
-
-    /// Pretty-print this node at the desired indent level
-    #[stable(feature = "ast", since = "0.0.2")]
-    fn print_level(&self, level: usize) -> String;
-}
-
-impl fmt::Debug for ASTNode {
-    #[stable(feature = "ast", since = "0.0.4")]
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.prettyprint())
-    }
-}
 
 /// Expression
 ///

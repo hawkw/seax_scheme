@@ -6,6 +6,9 @@ use svm::cell::Atom::*;
 use svm::cell::Inst::*;
 use svm::cell::SVMCell::*;
 
+use tools::SymTable;
+use tools::ast::ASTNode;
+
 use svm::slist::List::{Cons,Nil};
 
 #[test]

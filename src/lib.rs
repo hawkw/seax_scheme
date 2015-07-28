@@ -5,6 +5,7 @@
 #![feature(box_syntax,box_patterns)]
 #![feature(vec_push_all)]
 #![feature(slice_patterns)]
+#![feature(compile)]
 #![feature(staged_api)]
 #![staged_api]
 
@@ -22,9 +23,10 @@
 
 #[macro_use]
 extern crate seax_svm as svm;
-
+extern crate seax_compiler_tools as tools;
 #[macro_use]
 extern crate log;
+
 
 /// Contains the Scheme abstract syntax tree (AST).
 ///
@@ -47,17 +49,15 @@ pub mod ast;
 #[unstable(feature="parser")]
 pub mod parser;
 
-mod forktab;
-
-#[unstable(feature="forktable")]
-pub use self::forktab::ForkTable;
-
 use svm::slist::List;
 use svm::cell::SVMCell;
 
+use tools::ast::ASTNode;
+use tools::forktable::ForkTable;
+
 use std::iter::FromIterator;
 
-use self::ast::{ASTNode,ExprNode};
+use self::ast::ExprNode;
 
 
 /// Compile a Scheme program into a list of SVM cells (a control stack)
