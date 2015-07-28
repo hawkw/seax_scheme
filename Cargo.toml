@@ -1,5 +1,4 @@
 [package]
-
 name = "seax_scheme"
 version = "0.2.1"
 authors = ["Hawk Weisman <hi@hawkweisman.me>"]
@@ -14,3 +13,6 @@ keywords = ["vm","lisp","languages"]
 parser-combinators = "~0.2.6"
 log = "0.3.1"
 seax_svm = "^0.2.6"
+
+[dependencies.seax_compiler_tools]
+git = "https://github.com/hawkw/seax_compiler_tools.git"
