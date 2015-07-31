@@ -8,7 +8,7 @@ use svm::slist::List::{Cons,Nil};
 use self::ExprNode::*;
 use self::NumNode::*;
 
-use tools::ast::ASTNode;
+use tools::ast::{INDENT,ASTNode};
 use tools::forktable::ForkTable;
 use tools::{SymTable, CompileResult, Index, Scope};
 
@@ -20,8 +20,6 @@ use std::hash::Hash;
 
 #[cfg(test)]
 mod tests;
-
-static INDENT: &'static str = "    ";
 
 /// Expression
 ///
