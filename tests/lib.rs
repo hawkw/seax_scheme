@@ -9,13 +9,13 @@
 /// And from http://webdocs.cs.ualberta.ca/%7Eyou/courses/325/Mynotes/Fun/SECD-slides.html
 
 #[macro_use]
-extern crate seax_svm as svm;
+extern crate seax_util as seax;
 extern crate seax_scheme as scheme;
 
-use svm::slist::List::{Cons,Nil};
-use svm::cell::Atom::*;
-use svm::cell::SVMCell::*;
-use svm::Inst::*;
+use seax::List::{Cons,Nil};
+use seax::cell::Atom::*;
+use seax::cell::SVMCell::*;
+use seax::Inst::*;
 
 
 /// Test for simple list construction through CONS.
@@ -389,5 +389,3 @@ fn compile_name_shadowing_let() {
         ))
     );
 }*/
-
-

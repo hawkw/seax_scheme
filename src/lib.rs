@@ -21,11 +21,8 @@
 //! and R<sup>6</sup>RS may be the result of unimplemented features in
 //! Seax Scheme.
 
-#[macro_use]
-extern crate seax_svm as svm;
-extern crate seax_compiler_tools as tools;
-#[macro_use]
-extern crate log;
+#[macro_use] extern crate seax_util as seax;
+#[macro_use] extern crate log;
 
 
 /// Contains the Scheme abstract syntax tree (AST).
@@ -49,16 +46,15 @@ pub mod ast;
 #[unstable(feature="parser")]
 pub mod parser;
 
-use svm::slist::List;
-use svm::cell::SVMCell;
+use seax::List;
+use seax::SVMCell;
 
-use tools::ast::ASTNode;
-use tools::forktable::ForkTable;
+use seax::compiler_tools::ASTNode;
+use seax::compiler_tools::ForkTable;
 
 use std::iter::FromIterator;
 
 use self::ast::ExprNode;
-
 
 /// Compile a Scheme program into a list of SVM cells (a control stack)
 ///

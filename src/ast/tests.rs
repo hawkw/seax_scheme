@@ -2,14 +2,14 @@ use super::*;
 use super::NumNode::*;
 use super::ExprNode::*;
 
-use svm::cell::Atom::*;
-use svm::cell::Inst::*;
-use svm::cell::SVMCell::*;
+use seax::cell::Atom::*;
+use seax::cell::Inst::*;
+use seax::cell::SVMCell::*;
 
-use tools::SymTable;
-use tools::ast::ASTNode;
+use seax::compiler_tools::SymTable;
+use seax::compiler_tools::ASTNode;
 
-use svm::slist::List::{Cons,Nil};
+use seax::List::{Cons,Nil};
 
 #[test]
 fn test_compile_add() {

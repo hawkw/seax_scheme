@@ -12,7 +12,6 @@ keywords = ["vm","lisp","languages"]
 [dependencies]
 parser-combinators = "~0.2.6"
 log = "0.3.1"
-seax_svm = "^0.2.6"
 
-[dependencies.seax_compiler_tools]
-git = "https://github.com/hawkw/seax_compiler_tools.git"
+[dependencies.seax_util]
+git = "https://github.com/hawkw/seax_util.git"

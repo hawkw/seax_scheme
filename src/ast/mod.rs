@@ -1,16 +1,16 @@
-use svm::cell::SVMCell;
-use svm::cell::Atom::*;
-use svm::cell::Inst::*;
-use svm::cell::SVMCell::*;
-use svm::slist::{List,Stack};
-use svm::slist::List::{Cons,Nil};
+use seax::cell::SVMCell;
+use seax::cell::Atom::*;
+use seax::cell::Inst::*;
+use seax::cell::SVMCell::*;
+
+use seax::list::{List,Stack};
+use seax::list::{Cons,Nil};
+
+use seax::compiler_tools::ast::{INDENT,ASTNode};
+use seax::compiler_tools::{SymTable, CompileResult, Index, Scope};
 
 use self::ExprNode::*;
 use self::NumNode::*;
-
-use tools::ast::{INDENT,ASTNode};
-use tools::forktable::ForkTable;
-use tools::{SymTable, CompileResult, Index, Scope};
 
 use std::fmt;
 use std::fmt::Write;
