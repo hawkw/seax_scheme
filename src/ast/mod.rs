@@ -134,16 +134,13 @@ impl ASTNode for RootNode {
 
     #[stable(feature = "ast", since = "0.0.2")]
     fn print_level(&self, level: usize) -> String {
-        self.exprs
-            .iter()
-            .fold(
-                String::new(),
-                |mut s, i| {
-                    s.push_str(i.print_level(level + 1).as_ref());
-                    s
-                })
+        let mut result = String::new();
+        for expr in &self.exprs {
+            write!(result, "{}", &expr.print_level(level + 1))
+                .unwrap();
+        }
+        result
     }
-
 }
 
 /// AST node for an S-expression.
