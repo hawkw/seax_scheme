@@ -15,3 +15,6 @@ log = "0.3.1"
 
 [dependencies.seax_util]
 git = "https://github.com/hawkw/seax_util.git"
+
+[features]
+unstable = []

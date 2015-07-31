@@ -39,29 +39,39 @@ mod tests;
 ///  TODO: macros should happen
 ///  TODO: figure out quasiquote somehow.
 #[derive(Clone, PartialEq)]
-#[stable(feature = "ast", since = "0.0.2")]
+#[cfg_attr(feature = "unstable",
+    stable(feature = "ast", since = "0.0.2") )]
 pub enum ExprNode {
-    #[stable(feature = "ast", since = "0.0.2")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature = "ast", since = "0.0.2") )]
     Root(RootNode),
-    #[stable(feature = "ast", since = "0.0.2")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature = "ast", since = "0.0.2") )]
     SExpr(SExprNode),
-    #[stable(feature = "ast", since = "0.0.2")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature = "ast", since = "0.0.2") )]
     Name(NameNode),
-    #[stable(feature = "ast", since = "0.0.2")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature = "ast", since = "0.0.2") )]
     ListConst(ListNode),
-    #[stable(feature = "ast", since = "0.0.2")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature = "ast", since = "0.0.2") )]
     NumConst(NumNode),
-    #[stable(feature = "ast", since = "0.0.2")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature = "ast", since = "0.0.2") )]
     BoolConst(BoolNode),
-    #[stable(feature = "ast", since = "0.0.2")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature = "ast", since = "0.0.2") )]
     StringConst(StringNode),
-    #[stable(feature = "ast", since = "0.0.2")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature = "ast", since = "0.0.2") )]
     CharConst(CharNode),
 }
 
 impl ASTNode for ExprNode {
 
-    #[stable(feature = "compile", since = "0.0.3")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature = "compile", since = "0.0.3") )]
     fn compile<'a>(&'a self, state: &'a SymTable<'a>) -> CompileResult {
         match *self {
             //  TODO: should some of these nodes cause a state fork?
@@ -75,8 +85,8 @@ impl ASTNode for ExprNode {
             StringConst(ref node)   => node.compile(state)
         }
     }
-
-    #[stable(feature = "ast", since = "0.0.2")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature = "ast", since = "0.0.2") )]
     fn print_level(&self, level: usize) -> String {
         match *self {
             Root(ref node)          => node.print_level(level),
@@ -98,13 +108,17 @@ impl fmt::Debug for ExprNode {
 }
 
 #[derive(Clone, PartialEq)]
-#[stable(feature = "ast", since = "0.0.2")]
+#[cfg_attr(feature = "unstable",
+    stable(feature = "ast", since = "0.0.2") )]
 pub enum NumNode {
-    #[stable(feature = "ast", since = "0.0.2")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature = "ast", since = "0.0.2") )]
     IntConst(IntNode),
-    #[stable(feature = "ast", since = "0.0.2")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature = "ast", since = "0.0.2") )]
     UIntConst(UIntNode),
-    #[stable(feature = "ast", since = "0.0.2")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature = "ast", since = "0.0.2") )]
     FloatConst(FloatNode)
 }
 
@@ -116,7 +130,8 @@ impl fmt::Debug for NumNode {
 
 /// AST node for the root of a program's AST
 #[derive(Clone, PartialEq)]
-#[stable(feature = "ast", since = "0.0.2")]
+#[cfg_attr(feature = "unstable",
+    stable(feature = "ast", since = "0.0.2") )]
 pub struct RootNode { pub exprs: Vec<ExprNode> }
 
 impl fmt::Debug for RootNode {
@@ -126,13 +141,15 @@ impl fmt::Debug for RootNode {
 }
 
 impl ASTNode for RootNode {
-    #[unstable(feature="compile")]
+    #[cfg_attr(feature = "unstable",
+        unstable(feature="compile") )]
     #[allow(unused_variables)]
     fn compile<'a>(&'a self, state: &'a SymTable<'a>) -> CompileResult {
         Err("UNINPLEMENTED".to_string())
     }
 
-    #[stable(feature = "ast", since = "0.0.2")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature = "ast", since = "0.0.2") )]
     fn print_level(&self, level: usize) -> String {
         let mut result = String::new();
         for expr in &self.exprs {
@@ -148,11 +165,14 @@ impl ASTNode for RootNode {
 /// This includes function application, assignment,
 /// function definition, et cetera...Scheme is not a complexl anguage.
 #[derive(Clone, PartialEq)]
-#[stable(feature = "ast", since = "0.0.2")]
+#[cfg_attr(feature = "unstable",
+    stable(feature = "ast", since = "0.0.2") )]
 pub struct SExprNode {
-    #[stable(feature = "ast", since = "0.0.2")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature = "ast", since = "0.0.2") )]
     pub operator: Box<ExprNode>,
-    #[stable(feature = "ast", since = "0.0.2")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature = "ast", since = "0.0.2") )]
     pub operands: Vec<ExprNode>,
 }
 
@@ -165,7 +185,8 @@ impl ASTNode for SExprNode {
     /// ... everything.
     ///
     /// Abandon all hope, ye who enter here.
-    #[unstable(feature="compile")]
+    #[cfg_attr(feature = "unstable",
+        unstable(feature="compile") )]
     fn compile<'a>(&'a self, state: &'a SymTable<'a>) -> CompileResult {
         // TODO: break this monster apart into sub-functions
         // because this is a wretched abomination of cyclomatic complexity
@@ -363,7 +384,8 @@ impl ASTNode for SExprNode {
 
 impl SExprNode {
     /// Tests to see if this node is a binding expression
-    #[stable(feature = "compile",since = "0.1.1")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature = "compile",since = "0.1.1") )]
     fn is_bind(&self) -> bool {
         // I wish I didn't have to do it this way, there's an apparent
         // Rust issue (rust-lang/rust#23762) that makes it impossible
@@ -386,7 +408,8 @@ impl SExprNode {
     /// closure with nested clsures, since we want to associate the names bound
     /// in the top level of the closure with the lowest level of the stack at
     /// evaluation time.
-    #[stable(feature = "compile",since = "0.1.0")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature = "compile",since = "0.1.0") )]
     fn depth(&self)     -> u64 {
         self.operands.iter().fold(
             match *self.operator {
@@ -401,9 +424,11 @@ impl SExprNode {
     }
 }
 
-#[stable(feature = "ast", since = "0.0.4")]
+#[cfg_attr(feature = "unstable",
+    stable(feature = "ast", since = "0.0.4") )]
 impl fmt::Debug for SExprNode {
-    #[stable(feature = "ast", since = "0.0.2")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature = "ast", since = "0.0.2") )]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.prettyprint())
     }
@@ -411,24 +436,29 @@ impl fmt::Debug for SExprNode {
 
 /// AST node for a list literal
 #[derive(Clone, PartialEq)]
-#[stable(feature = "ast", since = "0.0.2")]
+#[cfg_attr(feature = "unstable",
+    stable(feature = "ast", since = "0.0.2") )]
 pub struct ListNode { pub elements: Vec<ExprNode> }
-#[stable(feature = "ast", since = "0.0.4")]
+#[cfg_attr(feature = "unstable",
+    stable(feature = "ast", since = "0.0.4") )]
 impl fmt::Debug for ListNode {
-    #[stable(feature = "ast", since = "0.0.4")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature = "ast", since = "0.0.4") )]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.prettyprint())
     }
 }
 
 impl ASTNode for ListNode {
-    #[unstable(feature="compile")]
+    #[cfg_attr(feature = "unstable",
+        unstable(feature="compile") )]
     #[allow(unused_variables)]
     fn compile<'a>(&'a self, state: &SymTable<'a>) -> CompileResult {
         Err("UNINPLEMENTED".to_string())
     }
 
-    #[stable(feature = "ast", since = "0.0.2")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature = "ast", since = "0.0.2") )]
     fn print_level(&self, level: usize) -> String {
         let mut tab = String::new();
         for _ in 0 .. level {tab.push_str(INDENT); };
@@ -448,13 +478,15 @@ impl ASTNode for ListNode {
 
 /// AST node for an identifier
 #[derive(Clone, PartialEq)]
-#[stable(feature = "ast", since = "0.0.2")]
+#[cfg_attr(feature = "unstable",
+    stable(feature = "ast", since = "0.0.2") )]
 pub struct NameNode { pub name: String }
 
 impl NameNode {
     /// Returns true if this is a keyword
     #[inline]
-    #[stable(feature = "ast", since = "0.0.3")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature = "ast", since = "0.0.3") )]
     fn is_kw(&self) -> bool {
         match self.name.as_ref() {
             "access" | "define-syntax" | "macro"  | "and"  | "delay"
@@ -471,7 +503,8 @@ impl NameNode {
     }
     /// Returns true if this is an arithmetic operator
     #[inline]
-    #[stable(feature = "ast", since = "0.0.3")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature = "ast", since = "0.0.3") )]
     fn is_arith(&self) -> bool {
       match self.name.as_ref() {
          "+" | "-" | "*" | "/" | "%" => true,
@@ -480,7 +513,8 @@ impl NameNode {
    }
     /// Returns true if this is a comparison operator
     #[inline]
-    #[stable(feature = "ast", since = "0.0.3")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature = "ast", since = "0.0.3") )]
     fn is_cmp(&self) -> bool {
       match self.name.as_ref() {
          "=" | "!=" | ">" | "<" | ">=" | "<=" => true,
@@ -488,19 +522,23 @@ impl NameNode {
       }
    }
 
-   #[stable(feature = "ast", since = "0.0.4")]
+   #[cfg_attr(feature = "unstable",
+       stable(feature = "ast", since = "0.0.4") )]
    pub fn new(name: String) -> Self { NameNode {name: name} }
 }
-#[stable(feature = "ast", since = "0.0.4")]
+#[cfg_attr(feature = "unstable",
+    stable(feature = "ast", since = "0.0.4") )]
 impl fmt::Debug for NameNode {
-    #[stable(feature = "ast", since = "0.0.4")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature = "ast", since = "0.0.4") )]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.prettyprint())
     }
 }
 
 impl ASTNode for NameNode {
-    #[unstable(feature="compile")]
+    #[cfg_attr(feature = "unstable",
+        unstable(feature="compile") )]
     fn compile<'a>(&'a self, state: &'a SymTable<'a>) -> CompileResult {
         match self.name.as_ref() {
             "cons"  => Ok(vec![InstCell(CONS)]),
@@ -531,7 +569,8 @@ impl ASTNode for NameNode {
         }
     }
 
-    #[stable(feature = "ast", since = "0.0.2")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature = "ast", since = "0.0.2") )]
     fn print_level(&self, level: usize) -> String {
         let mut tab = String::new();
         for _ in 0 .. level {tab.push_str(INDENT)};
@@ -543,14 +582,17 @@ impl ASTNode for NameNode {
 
 /// AST node for an integer constant
 #[derive(Clone, PartialEq,Debug)]
-#[stable(feature = "ast", since = "0.0.2")]
+#[cfg_attr(feature = "unstable",
+    stable(feature = "ast", since = "0.0.2") )]
 pub struct IntNode {
-    #[stable(feature = "ast", since = "0.0.2")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature = "ast", since = "0.0.2") )]
     pub value: i64
 }
 
 impl ASTNode for NumNode {
-    #[stable(feature="compile",since="0.0.3")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature="compile",since="0.0.3") )]
     #[allow(unused_variables)]
     fn compile<'a>(&'a self, state: &'a SymTable<'a>) -> CompileResult {
        match *self {
@@ -587,30 +629,37 @@ impl ASTNode for NumNode {
 
 /// AST node for an unsigned integer constant
 #[derive(Clone, PartialEq,Debug)]
-#[stable(feature = "ast", since = "0.0.2")]
+#[cfg_attr(feature = "unstable",
+    stable(feature = "ast", since = "0.0.2") )]
 pub struct UIntNode {
-    #[stable(feature = "ast", since = "0.0.2")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature = "ast", since = "0.0.2") )]
     pub value: u64
 }
 
 /// AST node for a floating-point constant
 #[derive(Clone, PartialEq,Debug)]
-#[stable(feature = "ast", since = "0.0.2")]
+#[cfg_attr(feature = "unstable",
+    stable(feature = "ast", since = "0.0.2") )]
 pub struct FloatNode {
-    #[stable(feature = "ast", since = "0.0.2")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature = "ast", since = "0.0.2") )]
     pub value: f64
 }
 
 /// AST node for a boolean constant
 #[derive(Clone, PartialEq,Debug)]
-#[stable(feature = "ast", since = "0.0.2")]
+#[cfg_attr(feature = "unstable",
+    stable(feature = "ast", since = "0.0.2") )]
 pub struct BoolNode {
-    #[stable(feature = "ast", since = "0.0.2")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature = "ast", since = "0.0.2") )]
     pub value: bool
 }
 
 impl ASTNode for BoolNode {
-    #[stable(feature="compile", since="0.0.6")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature="compile", since="0.0.6") )]
     #[allow(unused_variables)]
     fn compile<'a>(&'a self,state:  &'a SymTable)    -> CompileResult {
         match self.value {
@@ -619,7 +668,8 @@ impl ASTNode for BoolNode {
         }
     }
 
-    #[stable(feature = "ast", since = "0.0.2")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature = "ast", since = "0.0.2") )]
     fn print_level(&self, level: usize) -> String {
         let mut tab = String::new();
         for _ in 0 .. level {tab.push_str(INDENT);};
@@ -631,19 +681,23 @@ impl ASTNode for BoolNode {
 
 /// AST node for a character constant
 #[derive(Clone, PartialEq,Debug)]
-#[stable(feature = "ast", since = "0.0.2")]
+#[cfg_attr(feature = "unstable",
+    stable(feature = "ast", since = "0.0.2") )]
 pub struct CharNode {
-    #[stable(feature = "ast", since = "0.0.2")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature = "ast", since = "0.0.2") )]
     pub value: char
 }
 
 impl ASTNode for CharNode {
-    #[stable(feature="compile", since="0.0.7")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature = "compile", since="0.0.7") )]
     #[allow(unused_variables)]
     fn compile<'a>(&'a self, state: &'a SymTable<'a>) -> CompileResult {
         Ok(vec![AtomCell(Char(self.value))])
     }
-    #[stable(feature = "ast", since = "0.0.2")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature = "ast", since = "0.0.2") )]
     fn print_level(&self, level: usize) -> String {
         let mut tab = String::new();
         for _ in 0 .. level {tab.push_str(INDENT);};
@@ -655,7 +709,8 @@ impl ASTNode for CharNode {
 
 /// AST node for a  string constant
 #[derive(Clone, PartialEq,Debug)]
-#[stable(feature = "ast", since = "0.0.2")]
+#[cfg_attr(feature = "unstable",
+    stable(feature = "ast", since = "0.0.2") )]
 pub struct StringNode { pub value: String }
 
 impl ASTNode for StringNode {
@@ -663,7 +718,8 @@ impl ASTNode for StringNode {
     ///
     /// For now, this compiles strings into lists of characters.
     /// Eventually this may change.
-    #[unstable(feature="compile")]
+    #[cfg_attr(feature = "unstable",
+        unstable(feature="compile") )]
     #[allow(unused_variables)]
     fn compile<'a>(&'a self, state: &'a SymTable<'a>) -> CompileResult {
         let chars: Vec<u8> = self.value.clone().into();
@@ -672,7 +728,8 @@ impl ASTNode for StringNode {
                 chars.into_iter().map(|c| AtomCell(Char(c as char)))
                 )) ])
     }
-    #[stable(feature = "ast", since = "0.0.2")]
+    #[cfg_attr(feature = "unstable",
+        stable(feature = "ast", since = "0.0.2") )]
     #[allow(unused_variables)]
     fn print_level(&self, level: usize) -> String {
         format!("String: \"{}\"\n", self.value)

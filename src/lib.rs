@@ -1,13 +1,13 @@
 #![crate_name = "seax_scheme"]
-#![unstable(feature="scheme")]
 #![crate_type = "lib"]
-#![feature(convert)]
-#![feature(box_syntax,box_patterns)]
-#![feature(vec_push_all)]
-#![feature(slice_patterns)]
-#![feature(compile)]
-#![feature(staged_api)]
-#![staged_api]
+#![cfg_attr(feature = "unstable", feature(convert) )]
+#![cfg_attr(feature = "unstable", feature(box_syntax,box_patterns) )]
+#![cfg_attr(feature = "unstable", feature(vec_push_all) )]
+#![cfg_attr(feature = "unstable", feature(slice_patterns) )]
+#![cfg_attr(feature = "unstable", feature(compile) )]
+#![cfg_attr(feature = "unstable", feature(staged_api) )]
+#![cfg_attr(feature = "unstable", staged_api )]
+#![cfg_attr(feature = "unstable", unstable(feature="scheme") )]
 
 //! Library for compiling Scheme programs to Seax SVM bytecode.
 //!
@@ -31,7 +31,8 @@
 /// program, and is responsible for compiling those programs
 /// to SVM bytecode instructions, performing semantic analysis
 /// (as necessary), and (eventually) for optimizing programs.
-#[unstable(feature = "ast")]
+#[cfg_attr(feature = "unstable",
+    unstable(feature = "ast") )]
 pub mod ast;
 
 /// Contains the Scheme parser.
@@ -43,7 +44,8 @@ pub mod ast;
 /// Any deviations from the R6RS standard, especially those with an impact
 /// on the valid programs accepted by the parser, will be noted in the
 /// parser's RustDoc.
-#[unstable(feature="parser")]
+#[cfg_attr(feature = "unstable",
+    unstable(feature = "parser") )]
 pub mod parser;
 
 use seax::List;
@@ -69,7 +71,8 @@ use self::ast::ExprNode;
 ///    occured during compilation
 ///
 /// TODO: Should this return a list of errors instead?
-#[unstable(feature="compile")]
+#[cfg_attr(feature = "unstable",
+    unstable(feature = "compile") )]
 pub fn compile(program: &str) -> Result<List<SVMCell>, String> {
     parser::parse(program)
         .and_then(|tree: ExprNode     | {
