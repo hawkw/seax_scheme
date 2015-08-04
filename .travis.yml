@@ -47,8 +47,9 @@ before_deploy:
   # build the release executable (for GitHub Releases)
   - travis-cargo build -- --release
   # package for crates.io deployment and publish
-  - | travis-cargo package &&
-      travis-cargo publish -- --token $CRATES_TOKEN
+  - |
+    travis-cargo package &&
+    travis-cargo publish -- --token $CRATES_TOKEN
 
 # deploy to GitHub Releases
 deploy:
