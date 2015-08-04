@@ -1,11 +1,8 @@
 #![crate_name = "seax_scheme"]
 #![unstable(feature="scheme")]
 #![crate_type = "lib"]
-#![feature(convert)]
 #![feature(box_syntax,box_patterns)]
-#![feature(vec_push_all)]
 #![feature(slice_patterns)]
-#![feature(compile)]
 #![feature(staged_api)]
 #![feature(scheme, parser)]
 #![staged_api]
@@ -27,23 +24,12 @@
 extern crate parser;
 extern crate ast;
 
+use seax::List;
 use seax::cell::SVMCell;
-use seax::cell::Atom::*;
-use seax::cell::Inst::*;
-use seax::cell::SVMCell::*;
-
-use seax::list::{List,Stack};
-use seax::list::{Cons,Nil};
-
 use seax::compiler_tools::ForkTable;
-use seax::compiler_tools::ast::{INDENT,ASTNode};
-use seax::compiler_tools::{SymTable, CompileResult, Index, Scope};
+use seax::compiler_tools::ast::ASTNode;
 
-use std::fmt;
-use std::fmt::Write;
 use std::iter::FromIterator;
-use std::convert::Into;
-use std::hash::Hash;
 
 
 /// Contains the Scheme abstract syntax tree (AST).
