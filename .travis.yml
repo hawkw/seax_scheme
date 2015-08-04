@@ -22,9 +22,10 @@ script:
   - travis-cargo build
   # run the integration tests in the root crate,
   # and the unit tests for the parser and the AST
-  - | travis-cargo test &&
-      travis-cargo test -- -p ast &&
-      travis-cargo test -- -p parser
+  - |
+    travis-cargo test &&
+    travis-cargo test -- -p ast &&
+    travis-cargo test -- -p parser
 
 env:
   global:
