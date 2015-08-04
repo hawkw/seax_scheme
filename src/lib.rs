@@ -24,7 +24,6 @@
 #[macro_use] extern crate seax_util as seax;
 #[macro_use] extern crate log;
 
-
 /// Contains the Scheme abstract syntax tree (AST).
 ///
 /// The AST stores the semantic structure of a parsed Scheme
@@ -32,7 +31,7 @@
 /// to SVM bytecode instructions, performing semantic analysis
 /// (as necessary), and (eventually) for optimizing programs.
 #[unstable(feature = "ast")]
-pub mod ast;
+pub mod parser;
 
 /// Contains the Scheme parser.
 ///
@@ -44,17 +43,27 @@ pub mod ast;
 /// on the valid programs accepted by the parser, will be noted in the
 /// parser's RustDoc.
 #[unstable(feature="parser")]
-pub mod parser;
+pub mod ast;
 
-use seax::List;
-use seax::SVMCell;
+use ast::*;
 
-use seax::compiler_tools::ASTNode;
+use seax::cell::SVMCell;
+use seax::cell::Atom::*;
+use seax::cell::Inst::*;
+use seax::cell::SVMCell::*;
+
+use seax::list::{List,Stack};
+use seax::list::{Cons,Nil};
+
 use seax::compiler_tools::ForkTable;
+use seax::compiler_tools::ast::{INDENT,ASTNode};
+use seax::compiler_tools::{SymTable, CompileResult, Index, Scope};
 
+use std::fmt;
+use std::fmt::Write;
 use std::iter::FromIterator;
-
-use self::ast::ExprNode;
+use std::convert::Into;
+use std::hash::Hash;
 
 /// Compile a Scheme program into a list of SVM cells (a control stack)
 ///
