@@ -1,41 +1,60 @@
 sudo: false
 language: rust
 rust: nightly
+
+# install Coveralls dependencies
 addons:
   apt:
     packages:
-    - libcurl4-openssl-dev
-    - libelf-dev
-    - libdw-dev
+      - libcurl4-openssl-dev
+      - libelf-dev
+      - libdw-dev
+
+# Fetch travis-cargo
 before_script:
-- |
-  pip install 'travis-cargo<0.2' --user &&
-  export PATH=$HOME/.local/bin:$PATH
+  - |
+    pip install 'travis-cargo<0.2' --user &&
+    export PATH=$HOME/.local/bin:$PATH
+
+# the main build
 script:
+  # build the root crate
   - travis-cargo build
+  # run the integration tests in the root crate,
+  # and the unit tests for the parser and the AST
   - | travis-cargo test &&
       travis-cargo test -- -p ast &&
       travis-cargo test -- -p parser
-  - travis-cargo bench
+
 env:
   global:
   - TRAVIS_CARGO_NIGHTLY_FEATURE=""
   - secure: xHUGJn89lFSrNutHity1M+97tZjQ5ff0tjNbjDwchujL5BgP9aLVY3O7Wg3LoO/sWN8TYtO5sDVBy/8nV6HvVU28k/1ZLOQzDc2WeXIVBGdqOxB9QtLAkIa4aRHA6yhC65vI9zeTzGnOo166++4HvtU5DN5Bkq+Zm+AZxXVEZM+3AeiqaOLly6AzgUWCQf2TF8/aqU9K2sb6yBYsrBi8m4yMVYoC3pKlVlk6NbevhG059V/46zNQqDwbryLa+MPiRsnMuDVU2xAaKd4OAIxVNOfYmEETHnpZ1UNXMCc85XHOeu2+AVxJJzdb3U3jb7ixZ8z14ZwUBHzVgMv2p2lHvSL7TPQ/y+N4NOg7FEptxVzlzYT9h/5Nrx2sqVkgezzFf3L9vJ7W9CNHTBuW29gKpnNxuiFw0ZOU5c7St/tgccjzphOJaUvT1n7KuZinRktz7lIawShIuC8z1BChC2nDJoe650nvtUEETU++nj+rEdFmJwwGg+bz+vjsfFiXRxC6Fswe3Q7xrVrq+PDO51ZqZbOj1vj6Kxq1CdnHvvjNCb+wF4ihM4qf48Hnor80f+ciLwK5vENF6cMsSsTcEXHgXd1HwDGOkaBwkhQjwqg3fStuARmCQYmTnxuNHSNXnnazZq4MpRn4cqcr/ZeZsXOvJQ4BEA9HLacSD5Ii03D4u7A=
   - secure: hOaCd97R1ixJZzYZolcMBlqEtm/WAnIjNfUdIAne6GecWrpIrpUL6K9kXCv/LAOp0T2JzcbT/a9AlwSgzse5ZTqsf39letwtmCP4iMnoX6cqBGL39jTXMCQKYRhOKQiINhpu1pBnTyxHJAzKry+dglbaYHqapu/v7VR18Zqn0IpbawKw/C0xZzmnNZ8HUco30JVtRC8vNOUvoJNtlz1I7Q9H8GLBJ3E6ACfnz+pQomtuTcw28bkXxFC2WtaQAXWHbkJujVs+9RrD4EfbHJL1fkqQeJn/aoxfN0JBb3pTPWSi/ydPJUDXKrZkRqfAmb3YcTqOSO4jg+EpstNhHLf8nnz9pjMbxJEsLP/yTVSPefcTehwDnSK/0+1mmgWNBrXMzrapJUxVWSlc4oAvwk+mbju/LmVLZrP7uWUuPjRHCMOzpvZu62bUqq5j7QewTzQop6w56UbhRmlGhWqLD/oZbtZh/FwQ5TslsQtERAAPRV3lwIsE9ePC4rgNJi1petECCAkPufr+SmL8oReB8aa0NC5ojnc9lGxA8DIqW/9IwILBwRMCR+9iUO5ukclc7KxmayeCBZZJxCX5JRylfUhGarl+l8kgd7AE61YMO8dZ08U5ERlTgmoixtTcZB7wJY7JpBN7kg/O9wFp9VWw0FcQVwbyoqBlv7C9CkaMc2E/QpI=
   - secure: AT7zliS3OF1VYXZ+bzWhNq+PsNAvOAVxiPADAAjTPL+vJacIXgtjLuaAQvNhJLlm6ylHQMHZemjF6azmaYidB+tHjCGPvQY+9WK6vcm3Pci2rfQk9hwMGsN00DyrOvVisrreucMvOvQThC4QopRTtlAJdA3Fal7DswZ6Y1jF5U26hhsIuJhW6kOb1CzTfpymASz7FXW2HmX2OgKhRC4lyu0JDs4uzp+rOR3RMUjeR3FSto5Q9PDj4sv165v4t7LjShQC5NDJaH8bo5Oauc15s3YIlLVtAW8/aBlhuCzBjj6bqgzyu7Bo9mViZXEPHoyVwBk9MTWZFBUKgOBprwtZsy0BzzVCzS7dmKaZw056hF15ZxhwYHlcBzmTgT5peDiEfhMhqTaoXkiIPipx0kM7z+0DgyluUijc67IqizD+dPC8M8ly9Qq752Bb6DB6oU9JsPi8mv5wh75vr5ldjr3f5gXEoH8FzHpOGpYeQGnrzm5JRA77qL0jMC7TmdfLHDwArOLo3GtdxempAbs4txb7qk0xsclQZW+Rxn0OVYVQtyTn5TVMzeUeQgnqc1lqYECIHpaqvKqewE26fUvoaOeytgfp3UyUNPIoHnWVWvKTY+5FnnGm+Bwqz9HSJ3T5RMEv1NXzE7LIDD5IkkftptoIr4RtWnVo2h/pf1/PQmn7nJ4=
+
 after_success:
-- travis-cargo coveralls --no-sudo
-- bash <(curl https://codecov.io/bash)
+  # report coverage to coveralls
+  - travis-cargo coveralls --no-sudo
+  # report coverage to codecov.io
+  - bash <(curl https://codecov.io/bash)
+
+# triggers only if we're doing a deploy (tagged version)
 before_deploy:
+  # build the rustdoc & upload to GitHub Pages
   - travis-cargo doc && travis-cargo doc-upload
-  - | travis-cargo build -- --release &&
-      travis-cargo package &&
+  # build the release executable (for GitHub Releases)
+  - travis-cargo build -- --release
+  # package for crates.io deployment and publish
+  - | travis-cargo package &&
       travis-cargo publish -- --token $CRATES_TOKEN
+
+# deploy to GitHub Releases
 deploy:
   provider: releases
   api_key:
     secure: PMTzLk29n+dKEqxO7ZR9Jim5ygPyr6jYWjo+YalDx/t89GLn9vpkSR5oGLBws1sMSoiSiY5kd5wua3CwBkg4pc83+AnAWjHaM/rCfbSBQ2Tpsh8A81gWDdu5g8+bqwE12PYAIAX05z7r6BwpFwKm0gvGhlW6vd6QCHS1gE42aXIGJHD/7BJxloO46yPJY9RPtk/6LbtJCIp9tFN7izW5Kqqo/J6BE/DtxVS4ei9s+Gh93WHyz71bV7c09EzYXzYKZPWhF38bHp06pDqopc8KtJ+f73guPbkgCjaMZv91c5P+omJNrwk2iRRyOY8JRiPcH3VuJCReg8OViKdarA0ysQcc0YnoKJF/NU01NUrVn5qmNio/RJ+WHN1+QIZfeLfYnnirfMPyBneSjXb5D9VxGSdy9YdQI5xf0uKpikDjU0aDIxxSD9Vo5AsfckgYP1ev0SyGsrxVGucnaCdDbI+0f7z0IkHMi3NeOE8eY/hoaeuUfslt1WtkX4gFeziN5M5UOja1Zt1dVSUW/Cl29pi9iW5TKytIp7d2uiAgLyFPHuJp0mIy6UZgjNYdjDm8njvSo6vBMbxcY6cuzPDkICNl1n8c9qR2X7gk3Kx8VBT7813wPz71kha3bGi91tTOQuWOgz49qwNN4F0QFV0jyJNjpkvsjm/FmIs/BPXV9iCmh0U=
-  file: target/debug/libseax_scheme.rlib
+  file: target/release/libseax_scheme.rlib
   on:
     repo: hawkw/seax_scheme
     tags: true
