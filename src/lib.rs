@@ -7,6 +7,7 @@
 #![feature(slice_patterns)]
 #![feature(compile)]
 #![feature(staged_api)]
+#![feature(scheme, parser)]
 #![staged_api]
 
 //! Library for compiling Scheme programs to Seax SVM bytecode.
@@ -23,29 +24,8 @@
 
 #[macro_use] extern crate seax_util as seax;
 #[macro_use] extern crate log;
-
-/// Contains the Scheme abstract syntax tree (AST).
-///
-/// The AST stores the semantic structure of a parsed Scheme
-/// program, and is responsible for compiling those programs
-/// to SVM bytecode instructions, performing semantic analysis
-/// (as necessary), and (eventually) for optimizing programs.
-#[unstable(feature = "ast")]
-pub mod parser;
-
-/// Contains the Scheme parser.
-///
-/// This parser is based on the
-/// [Scheme grammar](final/html/r6rs/r6rs-Z-H-7.html) given in the
-/// [Revised<sup>6</sup> Report on Scheme](http://www.r6rs.org/)
-/// (R<sup>6</sup>RS).
-/// Any deviations from the R6RS standard, especially those with an impact
-/// on the valid programs accepted by the parser, will be noted in the
-/// parser's RustDoc.
-#[unstable(feature="parser")]
-pub mod ast;
-
-use ast::*;
+extern crate parser;
+extern crate ast;
 
 use seax::cell::SVMCell;
 use seax::cell::Atom::*;
@@ -64,6 +44,28 @@ use std::fmt::Write;
 use std::iter::FromIterator;
 use std::convert::Into;
 use std::hash::Hash;
+
+
+/// Contains the Scheme abstract syntax tree (AST).
+///
+/// The AST stores the semantic structure of a parsed Scheme
+/// program, and is responsible for compiling those programs
+/// to SVM bytecode instructions, performing semantic analysis
+/// (as necessary), and (eventually) for optimizing programs.
+#[unstable(feature = "ast")]
+pub use ast::*;
+
+/// Contains the Scheme parser.
+///
+/// This parser is based on the
+/// [Scheme grammar](final/html/r6rs/r6rs-Z-H-7.html) given in the
+/// [Revised<sup>6</sup> Report on Scheme](http://www.r6rs.org/)
+/// (R<sup>6</sup>RS).
+/// Any deviations from the R6RS standard, especially those with an impact
+/// on the valid programs accepted by the parser, will be noted in the
+/// parser's RustDoc.
+#[unstable(feature="parser")]
+pub use parser::*;
 
 /// Compile a Scheme program into a list of SVM cells (a control stack)
 ///
