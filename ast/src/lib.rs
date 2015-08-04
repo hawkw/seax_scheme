@@ -5,7 +5,6 @@
 #![feature(box_syntax,box_patterns)]
 #![feature(vec_push_all)]
 #![feature(slice_patterns)]
-#![feature(compile)]
 #![feature(staged_api)]
 #![staged_api]
 
@@ -20,7 +19,7 @@ use seax::list::{List,Stack};
 use seax::list::{Cons,Nil};
 
 use seax::compiler_tools::ast::{INDENT,ASTNode};
-use seax::compiler_tools::{SymTable, CompileResult, Index, Scope};
+use seax::compiler_tools::{SymTable, CompileResult, Scope};
 
 use self::ExprNode::*;
 use self::NumNode::*;
@@ -29,7 +28,6 @@ use std::fmt;
 use std::fmt::Write;
 use std::iter::FromIterator;
 use std::convert::Into;
-use std::hash::Hash;
 
 /// Expression
 ///
