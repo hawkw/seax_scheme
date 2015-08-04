@@ -6,7 +6,9 @@ use seax::cell::Atom::*;
 use seax::cell::Inst::*;
 use seax::cell::SVMCell::*;
 
-use seax::slist::List::{Cons,Nil};
+use seax::List::{Cons,Nil};
+use seax::compiler_tools::SymTable;
+use seax::compiler_tools::ast::ASTNode;
 
 #[test]
 fn test_compile_add() {
