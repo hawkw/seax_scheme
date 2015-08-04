@@ -13,7 +13,9 @@ before_script:
   export PATH=$HOME/.local/bin:$PATH
 script:
   - travis-cargo build
-  - | travis-cargo test && travis-cargo test -- -p ast && travis-cargo test -- -p parser
+  - | travis-cargo test &&
+      travis-cargo test -- -p ast &&
+      travis-cargo test -- -p parser
   - travis-cargo bench
 env:
   global:
@@ -25,9 +27,10 @@ after_success:
 - travis-cargo coveralls --no-sudo
 - bash <(curl https://codecov.io/bash)
 before_deploy:
-- travis-cargo doc-upload
-- cargo package
-- cargo publish --token $CRATES_TOKEN
+  - travis-cargo doc && travis-cargo doc-upload
+  - | travis-cargo build -- --release &&
+      travis-cargo package &&
+      travis-cargo publish -- --token $CRATES_TOKEN
 deploy:
   provider: releases
   api_key:
