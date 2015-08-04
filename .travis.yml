@@ -24,8 +24,8 @@ script:
   # and the unit tests for the parser and the AST
   - |
     travis-cargo test &&
-    travis-cargo test -- -p ast &&
-    travis-cargo test -- -p parser
+    cargo test -- -p ast &&
+    cargo test -- -p parser
 
 env:
   global:
