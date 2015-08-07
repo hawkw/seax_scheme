@@ -1,6 +1,6 @@
 [package]
 name = "seax_scheme"
-version = "0.3.0"
+version = "0.3.1"
 authors = ["Hawk Weisman <hi@hawkweisman.me>"]
 description = "Scheme compiler for the Seax VM."
 license = "MIT"
