@@ -1,12 +1,10 @@
 #![crate_name = "seax_scheme"]
 #![unstable(feature="scheme")]
 #![crate_type = "lib"]
-#![feature(convert)]
 #![feature(box_syntax,box_patterns)]
-#![feature(vec_push_all)]
 #![feature(slice_patterns)]
-#![feature(compile)]
 #![feature(staged_api)]
+#![feature(scheme, parser)]
 #![staged_api]
 
 //! Library for compiling Scheme programs to Seax SVM bytecode.
@@ -23,6 +21,15 @@
 
 #[macro_use] extern crate seax_util as seax;
 #[macro_use] extern crate log;
+extern crate parser;
+extern crate ast;
+
+use seax::List;
+use seax::cell::SVMCell;
+use seax::compiler_tools::ForkTable;
+use seax::compiler_tools::ast::ASTNode;
+
+use std::iter::FromIterator;
 
 
 /// Contains the Scheme abstract syntax tree (AST).
@@ -32,7 +39,7 @@
 /// to SVM bytecode instructions, performing semantic analysis
 /// (as necessary), and (eventually) for optimizing programs.
 #[unstable(feature = "ast")]
-pub mod ast;
+pub use ast::*;
 
 /// Contains the Scheme parser.
 ///
@@ -44,17 +51,7 @@ pub mod ast;
 /// on the valid programs accepted by the parser, will be noted in the
 /// parser's RustDoc.
 #[unstable(feature="parser")]
-pub mod parser;
-
-use seax::List;
-use seax::SVMCell;
-
-use seax::compiler_tools::ASTNode;
-use seax::compiler_tools::ForkTable;
-
-use std::iter::FromIterator;
-
-use self::ast::ExprNode;
+pub use parser::*;
 
 /// Compile a Scheme program into a list of SVM cells (a control stack)
 ///

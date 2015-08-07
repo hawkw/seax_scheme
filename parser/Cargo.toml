@@ -1,22 +1,16 @@
 [package]
-name = "seax_scheme"
+name = "parser"
 version = "0.3.0"
 authors = ["Hawk Weisman <hi@hawkweisman.me>"]
-description = "Scheme compiler for the Seax VM."
+description = "Parser for the Seax Scheme compiler"
 license = "MIT"
 homepage = "http://hawkweisman.me/seax"
 repository = "https://github.com/hawkw/seax_scheme"
-readme = "README.md"
+readme = "../README.md"
 keywords = ["vm","lisp","languages"]
 
 [dependencies]
-log = "0.3.1"
-
-[dependencies.seax_util]
-git = "https://github.com/hawkw/seax_util.git"
+parser-combinators = "~0.2.6"
 
 [dependencies.ast]
-path = "ast"
-
-[dependencies.parser]
-path = "parser"
+path = "../ast"

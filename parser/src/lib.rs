@@ -1,4 +1,14 @@
+#![crate_name = "parser"]
+#![unstable(feature="scheme")]
+#![crate_type = "lib"]
+#![feature(scheme)]
+#![feature(box_syntax,box_patterns)]
+#![feature(slice_patterns)]
+#![feature(staged_api)]
+#![staged_api]
+
 extern crate parser_combinators;
+extern crate ast;
 
 use self::parser_combinators::{try, between, parser, many, many1, any_char,
     optional, hex_digit, not_followed_by, skip_many, newline,ParserExt,};
@@ -6,8 +16,9 @@ use self::parser_combinators::combinator::With;
 use self::parser_combinators::primitives::{Parser, ParseResult, State};
 use self::parser_combinators::char::{spaces,Spaces,digit,satisfy,string};
 
-use super::ast::*;
-use super::ast::ExprNode::*;
+use ast::*;
+use ast::ExprNode::*;
+use ast::NumNode::*;
 
 use std::str::FromStr;
 use std::char;
