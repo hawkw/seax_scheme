@@ -23,6 +23,15 @@
 
 #[macro_use] extern crate seax_util as seax;
 #[macro_use] extern crate log;
+extern crate parser;
+extern crate ast;
+
+use seax::List;
+use seax::cell::SVMCell;
+use seax::compiler_tools::ForkTable;
+use seax::compiler_tools::ast::ASTNode;
+
+use std::iter::FromIterator;
 
 
 /// Contains the Scheme abstract syntax tree (AST).
@@ -31,9 +40,8 @@
 /// program, and is responsible for compiling those programs
 /// to SVM bytecode instructions, performing semantic analysis
 /// (as necessary), and (eventually) for optimizing programs.
-#[cfg_attr(feature = "unstable",
-    unstable(feature = "ast") )]
-pub mod ast;
+#[unstable(feature = "ast")]
+pub use ast::*;
 
 /// Contains the Scheme parser.
 ///
@@ -44,19 +52,8 @@ pub mod ast;
 /// Any deviations from the R6RS standard, especially those with an impact
 /// on the valid programs accepted by the parser, will be noted in the
 /// parser's RustDoc.
-#[cfg_attr(feature = "unstable",
-    unstable(feature = "parser") )]
-pub mod parser;
-
-use seax::List;
-use seax::SVMCell;
-
-use seax::compiler_tools::ASTNode;
-use seax::compiler_tools::ForkTable;
-
-use std::iter::FromIterator;
-
-use self::ast::ExprNode;
+#[unstable(feature="parser")]
+pub use parser::*;
 
 /// Compile a Scheme program into a list of SVM cells (a control stack)
 ///
