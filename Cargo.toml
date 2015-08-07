@@ -20,3 +20,6 @@ path = "ast"
 
 [dependencies.parser]
 path = "parser"
+
+[features]
+unstable = []
