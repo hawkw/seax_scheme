@@ -10,7 +10,8 @@ readme = "../README.md"
 keywords = ["vm","lisp","languages"]
 
 [dependencies]
-parser-combinators = "~0.2.6"
+combine = "1.0.0"
+combine-language = "0.5.0"
 
 [dependencies.ast]
 path = "../ast"
