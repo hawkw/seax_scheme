@@ -26,24 +26,31 @@ use std::ops::Deref;
 #[cfg(test)]
 mod tests;
 
-type ParseFn<'a, I, T> = fn (&'a SchemeEnv<'a, I>, State<I>)
+type ParseFn<'a, I, T> = fn (&SchemeEnv<'a, I>, State<I>)
                             -> ParseResult<T, I>;
 
-#[derive(Clone)]
-struct SchemeParser<'a, I, T>
+struct SchemeParser<'a: 'b, 'b, I, T>
 where I: Stream<Item=char>,
-      I: 'a {
-    env: &'a SchemeEnv<'a, I>,
+      I: 'b {
+    env: &'b SchemeEnv<'a, I>,
     parser: ParseFn<'a, I, T>
 }
 
-impl<'a, I, T> Parser for SchemeParser<'a, I, T>
+impl<'a, 'b, I, T> Parser for SchemeParser<'a, 'b, I, T>
 where I: Stream<Item=char> {
     type Output = T;
     type Input = I;
 
     fn parse_state(&mut self, input: State<I>) -> ParseResult<T, I> {
         (self.parser)(self.env, input)
+    }
+}
+
+impl <'a, 'b, I, T> Clone for SchemeParser<'a, 'b, I, T>
+where I: Stream<Item=char> {
+
+    fn clone(&self) -> Self {
+        SchemeParser { env: self.env, parser: self.parser }
     }
 }
 
@@ -64,14 +71,32 @@ where I: Stream<Item=char> {
 impl<'a, I> SchemeEnv<'a, I>
 where I: Stream<Item=char> {
 
-    fn parser<T>(&'a self, parser: ParseFn<'a, I,T>)
-                    -> SchemeParser<'a, I, T> {
+    fn parser<'b, T>(&'b self,
+                    parser: ParseFn<'a, I, T>)
+                    -> SchemeParser<'a, 'b, I, T> {
         SchemeParser { env: self, parser: parser }
     }
 
     fn hex_scalar(input: State<I>) -> ParseResult<String, I> {
         satisfy(|c| c == 'x' || c == 'X')
             .with( many1(hex_digit()) )
+            .parse_state(input)
+    }
+
+    fn hex_int(&self, input: State<I>) -> ParseResult<i64, I> {
+        satisfy(|c| c == '#')
+            .with(parser(SchemeEnv::hex_scalar))
+            .map(|x| i64::from_str_radix(x.as_ref(), 16)
+                         .unwrap())
+            .parse_state(input)
+    }
+
+    fn dec_int(&self, input: State<I>) -> ParseResult<i64, I> {
+        optional(satisfy(|c| c == '#')
+                .and(satisfy(|c| c == 'd' || c == 'D')))
+                .with(many1::<String, _>(digit())
+                        .map(|x| i64::from_str(x.as_ref()).unwrap() )
+                )
             .parse_state(input)
     }
 
@@ -84,20 +109,10 @@ where I: Stream<Item=char> {
     /// TODO: add support for R6RS exponents
     fn sint_const(&self, input: State<I>) -> ParseResult<NumNode, I> {
 
-        let hex_int = satisfy(|c| c == '#')
-                        .with(parser(SchemeEnv::hex_scalar)
-                        .map(|x| i64::from_str_radix(x.as_ref(), 16)
-                                     .unwrap())
-                            );
-
-        let dec_int = optional(satisfy(|c| c == '#')
-                        .and(satisfy(|c| c == 'd' || c == 'D')))
-                        .with(many1::<String, _>(digit())
-                                .map(|x| i64::from_str(x.as_ref()).unwrap() )
-                            );
-
         let signed = optional(satisfy(|c| c == '-'))
-                        .and(try(hex_int).or(dec_int)    );
+                .and(try(self.parser(SchemeEnv::hex_int))
+                        .or(self.parser(SchemeEnv::dec_int))
+                    );
 
         signed.map(|x| {
                 if let Some(sign) = x.0 {
@@ -116,6 +131,19 @@ where I: Stream<Item=char> {
             .parse_state(input)
     }
 
+    fn hex_uint(&self, input: State<I>) -> ParseResult<u64, I> {
+        satisfy(|c| c == '#')
+            .with(parser(SchemeEnv::hex_scalar)
+            .map(|x| u64::from_str_radix(x.as_ref(), 16).unwrap()) )
+            .parse_state(input)
+    }
+
+    fn dec_uint(&self, input: State<I>) -> ParseResult<u64, I> {
+        many1::<String, _>(digit())
+            .map(|x| u64::from_str(x.as_ref()).unwrap() )
+            .parse_state(input)
+    }
+
     /// Parser for unsigned integer constants.
     ///
     /// This parses unssigned integer constants in decimal and hexadecimal.
@@ -124,15 +152,8 @@ where I: Stream<Item=char> {
     /// TODO: add support for binary
     /// TODO: add support for R6RS exponents
     fn uint_const(&self, input: State<I>) -> ParseResult<NumNode, I> {
-
-        let hex_uint = satisfy(|c| c == '#')
-                        .with(self.parser(SchemeEnv::hex_scalar)
-                        .map(|x| u64::from_str_radix(x.as_ref(), 16).unwrap()) );
-
-        let dec_uint = many1::<String, _>(digit())
-                .map(|x| u64::from_str(x.as_ref()).unwrap() );
-
-        try(hex_uint).or(dec_uint)
+        try(self.parser(SchemeEnv::hex_uint))
+            .or(self.parser(SchemeEnv::dec_uint))
             .skip(satisfy(|c| c == 'u' || c == 'U'))
             .map(|x: u64| NumNode::UIntConst(UIntNode{value: x}))
             .parse_state(input)
@@ -172,6 +193,48 @@ where I: Stream<Item=char> {
             .parse_state(input)
     }
 
+    fn escape_char(input: State<I>) -> ParseResult<char, I> {
+        satisfy(|c| c == '\\')
+            .with( satisfy(|c|
+                    c == 'a' || c == 'b' || c == 't' || c == 'n' ||
+                    c == 'v' || c == 'f' || c == 'r' || c == '\\' || c == '"')
+                    .map(|c| match c {
+                        '"'     => '"',
+                        '\\'    => '\\',
+                        '/'     => '/',
+                        'b'     => '\u{0008}',
+                        'f'     => '\u{000c}',
+                        'n'     => '\n',
+                        'r'     => '\r',
+                        't'     => '\t',
+                        _       => unreachable!()
+                    }) )
+            .parse_state(input)
+    }
+
+    fn char_name(input: State<I>) -> ParseResult<char, I> {
+        choice([
+            string("tab"), string("vtab"), string("page"), string("alarm"),
+            string("nul"), string("esc"), string("defne"), string("space"),
+            string("backspace"), string("newline"), string("linefeed"),
+            string("return")
+        ]).map(|x| match x {
+            "newline" | "linefeed" => '\n',
+            "tab"                  => '\t',
+            "nul"                  => '\u{0000}',
+            "alarm"                => '\u{0007}',
+            "backspace"            => '\u{0008}',
+            "vtab"                 => '\u{000B}',
+            "page"                 => '\u{000C}',
+            "return"               => '\u{000D}',
+            "esc"                  => '\u{001B}',
+            "space"                => '\u{0020}',
+            "defne"                => '\u{007F}',
+            _                      => unreachable!()
+        }).parse_state(input)
+    }
+
+
     /// Recognizes R<sup>6</sup>RS character constants.
     ///
     /// Character constants begin with the delimiter `#\` and may take
@@ -188,40 +251,14 @@ where I: Stream<Item=char> {
     ///     + delimited with the character `x`
     ///     + e.g. `#\x1B` etc.
     fn character(&self, input: State<I>) -> ParseResult<CharNode, I> {
-
-        let newline = try(string("newline")).or(try(string("linefeed")))
-                                            .map(|_| '\n');
-
-        let tab = try(string("tab")).map(|_| '\t');
-
-        let nul = try(string("nul")).map(|_| '\u{0000}');
-
-        let backspace = try(string("backspace")).map(|_| '\u{0008}');
-
-        let vtab = try(string("vtab")).map(|_| '\u{000B}');
-
-        let page = try(string("page")).map(|_| '\u{000C}');
-
-        let retn = try(string("return")).map(|_| '\u{000D}');
-
-        let esc = try(string("esc")).map(|_| '\u{001B}');
-
-        let defne = try(string("defne")).map(|_| '\u{007F}');
-
-        let alarm = try(string("alarm")).map(|_| '\u{0007}');
-
-        let space = try(string("space")).map(|_| '\u{0020}');
-
-        let char_name = choice([ newline, tab, vtab, retn, nul, page, esc,
-                                 defne, alarm, space, backspace ]);
-
-        let hex_char = self.parser(SchemeEnv::hex_scalar)
+        let any_char = any();
+        let hex_char = parser(SchemeEnv::hex_scalar)
                            .map(|x| std::char::from_u32(
                                     u32::from_str_radix(&x,16).unwrap()
                                 ).unwrap() );
 
         string("#\\")
-            .with(choice([char_name, hex_char, parser(any)]))
+            .with(parser(SchemeEnv::char_name).or(hex_char).or(any_char))
             .map(|c| CharNode { value: c})
             .parse_state(input)
     }
@@ -229,7 +266,7 @@ where I: Stream<Item=char> {
     fn string_const(&self, input: State<I>) -> ParseResult<StringNode, I> {
 
         let string_char = satisfy(|c| c != '\\' && c!= '"')
-                            .or(self.env.escape_char());
+                            .or(parser(SchemeEnv::escape_char));
 
         between(
             satisfy(|c| c == '"'),
@@ -270,56 +307,70 @@ where I: Stream<Item=char> {
     /// [R6RS](http://www.r6rs.org/final/html/r6rs/r6rs-Z-H-7.html).
     #[cfg_attr(feature = "unstable",
         stable(feature = "parser", since = "0.0.2") )]
-    fn name(&self, input: State<I>) -> ParseResult<NameNode, I> {
-        try(self.env.operator())
-            .or(self.env.ident())
-            .map(NameNode::new)
+    fn name(&self, input: State<I>) -> ParseResult<ExprNode, I> {
+        try(self.env.op())
+            .or(self.env.identifier())
+            .map(|n| Name(NameNode::new(n)))
+            .parse_state(input)
+    }
+
+    fn sexpr_inner(&self, input: State<I>) -> ParseResult<ExprNode, I> {
+        self.parser(SchemeEnv::expr)
+            .and(self.lex(many(self.parser(SchemeEnv::expr))))
+            .map(|x| SExpr(SExprNode {
+                        operator: Box::new(x.0),
+                        operands: x.1
+                    })
+                )
+            .parse_state(input)
+    }
+
+    fn sexpr(&self, input: State<I>) -> ParseResult<ExprNode, I> {
+        self.lex(self.parens(self.parser(SchemeEnv::sexpr_inner))
+                    .or(self.brackets(self.parser(SchemeEnv::sexpr_inner)) )
+                )
+            .parse_state(input)
+    }
+
+    fn list(&self, input: State<I>) -> ParseResult<ExprNode, I> {
+        self.lex(self.parens(
+            many(self.parser(SchemeEnv::expr))
+                     .map(|x| ListConst(ListNode { elements: x }) )
+            ))
+            .parse_state(input)
+    }
+
+    fn constant(&self, input: State<I>) -> ParseResult<ExprNode, I> {
+        try(self.parser(SchemeEnv::number)
+                .map(NumConst))
+            .or(try(self.parser(SchemeEnv::character)
+                    .map(CharConst)))
+            .or(try(self.parser(SchemeEnv::string_const)
+                    .map(StringConst)))
+            .or(try(self.parser(SchemeEnv::bool_const)
+                    .map(BoolConst)))
+            .parse_state(input)
+    }
+
+    fn form(&self, input: State<I>) -> ParseResult<ExprNode, I> {
+        choice([ self.parser(SchemeEnv::sexpr),
+                 self.parser(SchemeEnv::list),
+                 self.parser(SchemeEnv::name) ])
             .parse_state(input)
     }
 
     /// Parses Scheme expressions.
     #[allow(unconditional_recursion)]
     fn expr(&self, input: State<I>) -> ParseResult<ExprNode, I> {
-
-        let sexpr_inner = self.parser(SchemeEnv::expr)
-                .and(self.lex(many(self.parser(SchemeEnv::expr))))
-                .map(|x| SExpr(SExprNode {
-                        operator: box x.0,
-                        operands: x.1
-                    })
-                );
-
-        let sexpr = self.lex(
-            self.parens(sexpr_inner).or(
-            self.brackets(sexpr_inner) )
-            );
-
-        let list = self.lex(self.parens(
-                    many(self.parser(SchemeEnv::expr))
-                        .map(|x| ListConst(ListNode {
-                                elements: x
-                            })
-                        )
-                    )
-                );
-
-        let constant = choice([
-            try(self.parser(SchemeEnv::number)
-                    .map(NumConst)),
-            try(self.parser(SchemeEnv::character)
-                    .map(CharConst)),
-            try(self.parser(SchemeEnv::string_const)
-                    .map(StringConst)),
-            try(self.parser(SchemeEnv::bool_const)
-                    .map(BoolConst))
-            ]);
-
-        let non_constant = choice([
-            sexpr, list, self.parser(SchemeEnv::name).map(Name)
-        ]);
-
-        self.lex( constant.or(non_constant) )
+        self.lex(
+            self.parser(SchemeEnv::constant)
+                .or(self.parser(SchemeEnv::form) )
+            )
             .parse_state(input)
+    }
+
+    fn expr_parser<'b>(&'b self) -> SchemeParser<'a, 'b, I, ExprNode> {
+        self.parser(SchemeEnv::expr)
     }
 
 }
@@ -327,25 +378,27 @@ where I: Stream<Item=char> {
 #[cfg_attr(feature = "unstable",
     unstable(feature="parser") )]
 pub fn parse(program: &str) -> Result<ExprNode, String> {
-    // R6RS 'special initial' characters
-    let special_initial = satisfy(|c|
-        c == '!' || c == '$' || c == '%' || c == ':' || c == '^' ||
-        c == '<' || c == '>' || c == '_' || c == '~' || c == '\\' ||
-        c == '?'
-    );
-    // R6RS 'special subsequent' characters
-    let special_subsequent = satisfy(|c|
-        c == '+' || c == '-' || c == '.' || c == '@'
-    );
     let env = LanguageEnv::new(LanguageDef{
         ident: Identifier {
-            start: letter().or(special_initial),
-            rest: alpha_num().or(special_initial)
-                             .or(special_subsequent),
+            start:   letter().or(satisfy(|c|
+                // R6RS 'special initial' characters
+                c == '!' || c == '$' || c == '%' || c == ':' || c == '^' ||
+                c == '<' || c == '>' || c == '_' || c == '~' || c == '\\' ||
+                c == '?'
+            )),
+            rest: alpha_num().or(satisfy(|c|
+                // R6RS 'special initial' characters
+                c == '!' || c == '$' || c == '%' || c == ':' || c == '^' ||
+                c == '<' || c == '>' || c == '_' || c == '~' || c == '\\' ||
+                c == '?' ||
+                // R6RS 'special subsequent' characters
+                c == '+' || c == '-' || c == '.' || c == '@'
+            )),
             // this is a hack around `combine_language` behaviour; since the
-            // Seax Scheme AST expects reserved words to be parsed as identifiers
+            // Seax Scheme AST expects reserved words to be parsed as identifiers,
+            // we put the operators here instead so they don't get parsed as idents
             reserved: ["+", "-", "/", "*", "=", ">", ">=", "<", "<=", "!="].iter()
-                        .map(|x| (*x).into()).collect().iter()
+                        .map(|x| (*x).into()).collect()
         },
         op: Identifier {
             start: satisfy( |c|
@@ -353,8 +406,17 @@ pub fn parse(program: &str) -> Result<ExprNode, String> {
                 c == '!' || c == '>' || c == '<'),
             rest: satisfy(|c| c == '='),
             // this is a hack around `combine_language` behaviour; since the
-            // Seax Scheme AST expects reserved words to be parsed as identifiers
-            reserved: [].iter().map(|x| (*x).into()).collect().iter()
+            // Seax Scheme AST expects reserved words to be parsed as identifiers,
+            // we just put the keywords here
+            reserved: ["access", "define-syntax", "macro" , "and" , "delay",
+            "make-environment", "begin" , "do", "named-lambda", "bkpt",
+            "fluid-let", "or", "case", "if", "quasiquote", "cond",
+            "in-package", "quote", "cons-stream", "lambda", "scode-quote",
+            "declare", "let", "sequence", "default-object?", "let*", "set!",
+            "define", "let-syntax", "the-environment", "define-integrable",
+            "letrec", "unassigned?", "define-macro", "local-declare", "using-syntax",
+            "define-structure", "car", "cdr", "cons", "nil", "nil?", "atom?"]
+                .iter().map(|x| (*x).into()).collect()
         },
         comment_line: ";",
         comment_start: "#|",
@@ -365,7 +427,7 @@ pub fn parse(program: &str) -> Result<ExprNode, String> {
     let senv = SchemeEnv{env: env};
 
     senv.white_space()
-        .with(senv.expr())
+        .with(senv.expr_parser())
         .parse(program)
         .map_err(|e| String::from(e.description()) )
         .map(    |x| x.0 )
