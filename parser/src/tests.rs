@@ -85,7 +85,7 @@ test_parse!(float_decimal_repeating,
 test_parse!(basic_arith,
     "(+ 10 10)",
     SExpr(SExprNode {
-        operator: box Name(NameNode { name: "+".to_string() }),
+        operator: Box::new(Name(NameNode { name: "+".to_string() })),
         operands: vec![
             NumConst(IntConst(IntNode{ value: 10 })),
             NumConst(IntConst(IntNode{ value: 10 }))
@@ -101,14 +101,14 @@ test_parse!(basic_arith,
 /// ```
 test_parse!(list_car, "(car (cons 10 (cons 20 nil)))",
     SExpr(SExprNode {
-        operator: box Name(NameNode { name: "car".to_string() }),
+        operator: Box::new(Name(NameNode { name: "car".to_string() })),
         operands: vec![
             SExpr(SExprNode {
-                operator: box Name(NameNode { name: "cons".to_string() }),
+                operator: Box::new(Name(NameNode { name: "cons".to_string() })),
                 operands: vec![
                     NumConst(IntConst(IntNode{ value: 10 })),
                     SExpr(SExprNode {
-                        operator: box Name(NameNode { name: "cons".to_string() }),
+                        operator: Box::new(Name(NameNode { name: "cons".to_string() })),
                         operands: vec![
                             NumConst(IntConst(IntNode{ value: 20 })),
                             Name(NameNode { name: "nil".to_string() })
@@ -127,14 +127,14 @@ test_parse!(list_car, "(car (cons 10 (cons 20 nil)))",
 /// ```
 test_parse!(list_cdr, "(cdr (cons 10 (cons 20 nil)))",
     SExpr(SExprNode {
-        operator: box Name(NameNode { name: "cdr".to_string() }),
+        operator: Box::new(Name(NameNode { name: "cdr".to_string() })),
         operands: vec![
             SExpr(SExprNode {
-                operator: box Name(NameNode { name: "cons".to_string() }),
+                operator: Box::new(Name(NameNode { name: "cons".to_string() })),
                 operands: vec![
                     NumConst(IntConst(IntNode{ value: 10 })),
                     SExpr(SExprNode {
-                        operator: box Name(NameNode { name: "cons".to_string() }),
+                        operator: Box::new(Name(NameNode { name: "cons".to_string() })),
                         operands: vec![
                             NumConst(IntConst(IntNode{ value: 20 })),
                             Name(NameNode { name: "nil".to_string() })
@@ -153,11 +153,11 @@ test_parse!(list_cdr, "(cdr (cons 10 (cons 20 nil)))",
 /// ```
 test_parse!(nested_arith, "(- 20 (+ 5 5))",
     SExpr(SExprNode {
-        operator: box Name(NameNode { name: "-".to_string() }),
+        operator: Box::new(Name(NameNode { name: "-".to_string() })),
         operands: vec![
             NumConst(IntConst(IntNode{ value: 20 })),
             SExpr(SExprNode {
-                operator: box Name(NameNode { name: "+".to_string() }),
+                operator: Box::new(Name(NameNode { name: "+".to_string() })),
                 operands: vec![
                     NumConst(IntConst(IntNode{ value: 5 })),
                     NumConst(IntConst(IntNode{ value: 5 }))
@@ -175,11 +175,11 @@ test_parse!(nested_arith, "(- 20 (+ 5 5))",
 /// ```
 test_parse!(nested_arith_square_bracket, "(- 20 [+ 5 5])",
     SExpr(SExprNode {
-        operator: box Name(NameNode { name: "-".to_string() }),
+        operator: Box::new(Name(NameNode { name: "-".to_string() })),
         operands: vec![
             NumConst(IntConst(IntNode{ value: 20 })),
             SExpr(SExprNode {
-                operator: box Name(NameNode { name: "+".to_string() }),
+                operator: Box::new(Name(NameNode { name: "+".to_string() })),
                 operands: vec![
                     NumConst(IntConst(IntNode{ value: 5 })),
                     NumConst(IntConst(IntNode{ value: 5 }))
@@ -198,14 +198,14 @@ test_parse!(nested_arith_square_bracket, "(- 20 [+ 5 5])",
 /// ```
 test_parse!(basic_branching_1, "(if (= 0 (- 1 1)) #t #f)",
     SExpr(SExprNode {
-        operator: box Name(NameNode::new("if".to_string())),
+        operator: Box::new(Name(NameNode::new("if".to_string()))),
         operands: vec![
             SExpr(SExprNode{
-                operator: box Name(NameNode::new("=".to_string())),
+                operator: Box::new(Name(NameNode::new("=".to_string()))),
                 operands: vec![
                     NumConst(IntConst(IntNode{value: 0})),
                     SExpr(SExprNode{
-                        operator: box Name(NameNode::new("-".to_string())),
+                        operator: Box::new(Name(NameNode::new("-".to_string()))),
                         operands: vec![
                             NumConst(IntConst(IntNode{ value: 1 })),
                             NumConst(IntConst(IntNode{ value: 1 }))
